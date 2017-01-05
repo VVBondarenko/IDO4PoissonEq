@@ -109,36 +109,42 @@ void Grid_IDO_Iteration(Grid *Task)
     double c, C;
     double d, D;
 
-//    C = (1.25/hx*(Uarr[i+1]-Uarr[i-1])-0.25*(dUarr[i+1]+8*dUarr[i]+dUarr[i-1]))/hx/hx;
-//    D = (1./hx*(Uarr[i+1] -2.*Uarr[i]+Uarr[i-1]) -0.25*(dUarr[i+1]-dUarr[i-1]))/hx;
 
     for(i=1; i<Task->n-1; i++)
     {
         for(j=1; j<Task->n-1; j++)
         {
+            c=(1.25/Task->h*(Task->U[i+1][j]-Task->U[i-1][j])
+                      -0.25*(Task->dUdx[i+1][j]
+                          +8*Task->dUdx[i][j]
+                            +Task->dUdx[i-1][j]))/Task->h/Task->h;
+            C=(1.25/Task->h*(Task->U[i][j+1]-Task->U[i][j-1])
+                      -0.25*(Task->dUdy[i][j+1]
+                          +8*Task->dUdy[i][j]
+                            +Task->dUdy[i][j-1]))/Task->h/Task->h;
+
+            d=(1./Task->h*(Task->U[i+1][j]
+                       -2.*Task->U[i][j]
+                          +Task->U[i-1][j])
+                    -0.25*(Task->dUdx[i+1][j]-Task->dUdx[i-1][j]))/Task->h;
+
+            D=(1./Task->h*(Task->U[i][j+1]
+                       -2.*Task->U[i][j]
+                          +Task->U[i][j-1])
+                    -0.25*(Task->dUdy[i][j+1]-Task->dUdy[i][j-1]))/Task->h;
+
+
             nU[i][j] = Task->U[i][j]
                     + 2.*Task->tau*(d+D);
-        }
-    }
-    // --||-- in dUdx
-    for(i=1; i<Task->n-1; i++)
-    {
-        for(j=1; j<Task->n-1; j++)
-        {
-            ndUdx[i][j] = Task->dUdx[i][j]
-                    + Task->tau*(6.*c+(Task->dUdx[i][j+1] -2*Task->dUdx[i][j]+
-                                      Task->dUdx[i][j-1])/Task->h/Task->h);
-        }
-    }
 
-    // --||-- in dUdy
-    for(i=1; i<Task->n-1; i++)
-    {
-        for(j=1; j<Task->n-1; j++)
-        {
+            ndUdx[i][j] = Task->dUdx[i][j]
+                    + Task->tau*(6.*c+(Task->dUdx[i][j+1]
+                                    -2*Task->dUdx[i][j]+
+                                       Task->dUdx[i][j-1])/Task->h/Task->h);
             ndUdy[i][j] = Task->dUdy[i][j]
-                    + Task->tau*(6.*c+(Task->dUdy[i+1][j] -2*Task->dUdy[i][j]+
-                                      Task->dUdy[i-1][j])/Task->h/Task->h);
+                    + Task->tau*(6.*C+(Task->dUdy[i+1][j]
+                                    -2*Task->dUdy[i][j]+
+                                       Task->dUdy[i-1][j])/Task->h/Task->h);
         }
     }
 
@@ -163,4 +169,44 @@ void Grid_IDO_Iteration(Grid *Task)
     free((void *)nU);
     free((void *)ndUdx);
     free((void *)ndUdy);
+}
+
+void Grid_IDO_InitDeriv(Grid *Task)
+{
+    int i,j;
+    for(i=0;i<Task->n;i++)
+    {
+        for(j=0;j<Task->n;j++)
+        {
+            //init dudx and dudy
+            if(i!=0 && i!=Task->n-1)
+            {
+                Task->dUdx[i][j] =
+                        0.5*(Task->U[i+1][j]-Task->U[i-1][j])/Task->h;
+            }
+            else
+            {
+                if(i==0)
+                    Task->dUdx[0][j]=(Task->U[1][j]-Task->U[0][j])/Task->h;
+                if(i==Task->n-1)
+                    Task->dUdx[Task->n-1][j]=
+                    (Task->U[Task->n-1][j]-Task->U[Task->n-2][j])/Task->h;
+            }
+
+            if(j!=0 && j!=Task->n-1)
+            {
+                Task->dUdx[i][j] =
+                        0.5*(Task->U[i][j+1]-Task->U[i][j-1])/Task->h;
+            }
+            else
+            {
+                if(j==0)
+                    Task->dUdx[i][0]=(Task->U[i][1]-Task->U[i][0])/Task->h;
+                if(j==Task->n-1)
+                    Task->dUdx[i][Task->n-1]=
+                    (Task->U[i][Task->n-1]-Task->U[i][Task->n-2])/Task->h;
+            }
+
+        }
+    }
 }

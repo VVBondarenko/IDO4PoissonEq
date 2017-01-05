@@ -25,5 +25,7 @@ void Grid_Init          (Grid *Task,
 void Grid_InitDirihlet  (Grid *Task, double (*f)(double, double));
 void Grid_Plot          (Grid *Task);
 void Grid_CrossIteration(Grid *Task);
+
+void Grid_IDO_InitDeriv (Grid *Task);
 void Grid_IDO_Iteration (Grid *Task);
 #endif // GRID_H
