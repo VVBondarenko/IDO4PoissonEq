@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I./inc/ -g -lm 
+CFLAGS=-I./inc/ -g -lm -fopenmp
 #-lgsl -lgslcblas
 
 SRC = src/main.c \

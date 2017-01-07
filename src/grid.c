@@ -15,7 +15,7 @@ void Grid_Init(Grid *Task,
     Task->tau = tau;
     Task->h = (x1-x0)/(n-1);
     //define arrays
-    int i;
+    int i,j;
     Task->U      = malloc(n * sizeof(double*));
     Task->dUdx   = malloc(n * sizeof(double*));
     Task->dUdy   = malloc(n * sizeof(double*));
@@ -26,6 +26,17 @@ void Grid_Init(Grid *Task,
         Task->dUdx[i]    = malloc(n * sizeof(double));
         Task->dUdy[i]    = malloc(n * sizeof(double));
         Task->dUdxdy[i]    = malloc(n * sizeof(double));
+    }
+
+    for(i=0;i<n;i++)
+    {
+        for(j=0;j<n;j++)
+        {
+            Task->U[i][j]=0.;
+            Task->dUdx[i][j]=0.;
+            Task->dUdy[i][j]=0.;
+            Task->dUdxdy[i][j]=0.;
+        }
     }
 }
 
@@ -59,7 +70,7 @@ void Grid_Plot(Grid *Task)
                                                        Task->U[i][j]);
 }
 
-void Grid_CrossIteration(Grid *Task)
+void Grid_CrossIteration(Grid *Task, double omega)
 {
     int i,j;
     //define a new array for u on (n+1) iteration
@@ -72,8 +83,44 @@ void Grid_CrossIteration(Grid *Task)
     {
         for(j=1; j<Task->n-1; j++)
         {
-            nU[i][j] = 0.25*(Task->U[i+1][j]+Task->U[i-1][j]
-                       +Task->U[i][j+1]+Task->U[i][j-1]);
+            nU[i][j] = (1-omega)*Task->U[i][j]
+                    +omega*0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                                +Task->U[i][j+1]+Task->U[i][j-1]);
+        }
+    }
+    //move data to Task->U
+    for(i=1; i<Task->n-1; i++)
+    {
+        for(j=1; j<Task->n-1; j++)
+        {
+            Task->U[i][j] = nU[i][j];
+        }
+    }
+
+    //clean temporary arrays
+    for(i=0; i<Task->n; i++)
+        free((void *)nU[i]);
+    free((void *)nU);
+}
+
+void Grid_CrossIteration_w_force(Grid *Task, double omega, Grid *force)
+{
+    int i,j;
+    //define a new array for u on (n+1) iteration
+    double **nU;
+    nU = malloc(Task->n * sizeof(double*));
+    for(i=0; i<Task->n; i++)
+        nU[i] = malloc(Task->n * sizeof(double));
+    //for all values apply classical schematic
+    #pragma omp parallel for shared(nU,omega,Task,force) private(i,j)
+    for(i=1; i<Task->n-1; i++)
+    {
+        for(j=1; j<Task->n-1; j++)
+        {
+            nU[i][j] = (1-omega)*Task->U[i][j]
+                    +omega*0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                                +Task->U[i][j+1]+Task->U[i][j-1]
+                                -force->U[i][j]*Task->h*Task->h);
         }
     }
     //move data to Task->U
@@ -171,7 +218,7 @@ void Grid_IDO_Iteration(Grid *Task)
     free((void *)ndUdy);
 }
 
-void Grid_IDO_Iteration_2(Grid *Task, double omega)
+void Grid_IDO_IterationOriginal(Grid *Task, double omega)
 {
     int i,j;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -238,6 +285,125 @@ void Grid_IDO_Iteration_2(Grid *Task, double omega)
                             -1.5*(Task->dUdxdy[i][j+1]+Task->dUdxdy[i][j-1]
                                  +Task->dUdxdy[i+1][j]+Task->dUdxdy[i-1][j])/h/h
                             )/24*h*h;
+        }
+    }
+
+    // update the data in Task
+    for(i=1; i<Task->n-1; i++)
+    {
+        for(j=1; j<Task->n-1; j++)
+        {
+            Task->U[i][j] = nU[i][j];
+            Task->dUdx[i][j] = ndUdx[i][j];
+            Task->dUdy[i][j] = ndUdy[i][j];
+            Task->dUdxdy[i][j] = ndUdxdy[i][j];
+        }
+    }
+
+    //clean temporary arrays
+    for(i=0; i<Task->n; i++)
+    {
+        free((void *)nU[i]);
+        free((void *)ndUdx[i]);
+        free((void *)ndUdy[i]);
+        free((void *)ndUdxdy[i]);
+    }
+    free((void *)nU);
+    free((void *)ndUdx);
+    free((void *)ndUdy);
+    free((void *)ndUdxdy);
+}
+
+void Grid_IDO_IterationModified(Grid *Task, double omega)
+{
+    int i,j,p;
+    //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
+    double **nU, **ndUdx, **ndUdy, **ndUdxdy;
+    nU    = malloc(Task->n * sizeof(double*));
+    ndUdx = malloc(Task->n * sizeof(double*));
+    ndUdy = malloc(Task->n * sizeof(double*));
+    ndUdxdy = malloc(Task->n * sizeof(double*));
+    for(i=0; i<Task->n; i++)
+    {
+        nU[i]    = malloc(Task->n * sizeof(double));
+        ndUdx[i] = malloc(Task->n * sizeof(double));
+        ndUdy[i] = malloc(Task->n * sizeof(double));
+        ndUdxdy[i] = malloc(Task->n * sizeof(double));
+    }
+    //for all values in U apply scheme
+    double h = Task->h;
+
+
+    for(p=1; p<Task->n-1; p++)
+    {
+        i=p;j=1;
+        nU[i][j] = 0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                   +Task->U[i][j+1]+Task->U[i][j-1]);
+        ndUdx[i][j] = 0.5*(Task->U[i+1][j]-Task->U[i-1][j])/h;
+        ndUdy[i][j] = 0.5*(Task->U[i][j+1]-Task->U[i][j-1])/h;
+        ndUdxdy[i][j] = 0.25*(Task->U[i+1][j+1]
+                             -Task->U[i-1][j+1]
+                             -Task->U[i+1][j-1]
+                             +Task->U[i-1][j-1])/h/h;
+        i=p;j=Task->n-2;
+        nU[i][j] = 0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                   +Task->U[i][j+1]+Task->U[i][j-1]);
+        ndUdx[i][j] = 0.5*(Task->U[i+1][j]-Task->U[i-1][j])/h;
+        ndUdy[i][j] = 0.5*(Task->U[i][j+1]-Task->U[i][j-1])/h;
+        ndUdxdy[i][j] = 0.25*(Task->U[i+1][j+1]
+                             -Task->U[i-1][j+1]
+                             -Task->U[i+1][j-1]
+                             +Task->U[i-1][j-1])/h/h;
+        i=1;j=p;
+        nU[i][j] = 0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                   +Task->U[i][j+1]+Task->U[i][j-1]);
+        ndUdx[i][j] = 0.5*(Task->U[i+1][j]-Task->U[i-1][j])/h;
+        ndUdy[i][j] = 0.5*(Task->U[i][j+1]-Task->U[i][j-1])/h;
+        ndUdxdy[i][j] = 0.25*(Task->U[i+1][j+1]
+                             -Task->U[i-1][j+1]
+                             -Task->U[i+1][j-1]
+                             +Task->U[i-1][j-1])/h/h;
+        i=Task->n-2;j=p;
+        nU[i][j] = 0.25*(Task->U[i+1][j]+Task->U[i-1][j]
+                   +Task->U[i][j+1]+Task->U[i][j-1]);
+        ndUdx[i][j] = 0.5*(Task->U[i+1][j]-Task->U[i-1][j])/h;
+        ndUdy[i][j] = 0.5*(Task->U[i][j+1]-Task->U[i][j-1])/h;
+        ndUdxdy[i][j] = 0.25*(Task->U[i+1][j+1]
+                             -Task->U[i-1][j+1]
+                             -Task->U[i+1][j-1]
+                             +Task->U[i-1][j-1])/h/h;
+
+    }
+
+    for(i=2; i<Task->n-2; i++)
+    {
+        for(j=2; j<Task->n-2; j++)
+        {
+
+                nU[i][j] = (1-omega)*Task->U[i][j]
+                        +omega*(2/h/h*(Task->U[i+1][j]+Task->U[i-1][j]
+                        +Task->U[i][j+1]+Task->U[i][j-1])
+                        -0.5/h*(Task->dUdx[i+1][j]-Task->dUdx[i-1][j]
+                        +Task->dUdy[i][j+1]-Task->dUdy[i][j-1]))/8.*h*h;
+
+                ndUdx[i][j] = (1-omega)*Task->dUdx[i][j]
+                        +omega*(7.5*(Task->U[i+1][j]-Task->U[i-1][j])/h/h/h
+                        -1.5*(Task->dUdx[i+1][j]+Task->dUdx[i-1][j])/h/h
+                        +2.*(Task->dUdx[i][j+1]+Task->dUdx[i][j-1])/h/h
+                        -0.5*(Task->dUdxdy[i][j+1]-Task->dUdxdy[i][j-1])/h)
+                        /(12/h/h+4/h/h);
+                ndUdy[i][j] = (1-omega)*Task->dUdy[i][j]
+                        +omega*(7.5*(Task->U[i][j+1]-Task->U[i][j-1])/h/h/h
+                        -1.5*(Task->dUdy[i][j+1]+Task->dUdy[i][j-1])/h/h
+                        +2.*(Task->dUdy[i+1][j]+Task->dUdy[i-1][j])/h/h
+                        -0.5*(Task->dUdxdy[i+1][j]-Task->dUdxdy[i-1][j])/h)
+                        /(12/h/h+4/h/h);
+                ndUdxdy[i][j] = (1-omega)*Task->dUdxdy[i][j]
+                        +omega*(7.5*(Task->dUdx[i][j+1]-Task->dUdx[i][j-1]
+                        +Task->dUdy[i+1][j]-Task->dUdy[i-1][j])/h/h/h
+                        -1.5*(Task->dUdxdy[i][j+1]+Task->dUdxdy[i][j-1]
+                        +Task->dUdxdy[i+1][j]+Task->dUdxdy[i-1][j])/h/h
+                        )/24*h*h;
         }
     }
 
@@ -440,63 +606,111 @@ void Grid_print_error(Grid *Task, double (*exact)(double, double))
                                                 Task->y0+j*Task->h)));
         }
     }
-    printf("%10.10f\n",maxErr);
+    printf("%10.10e\n",maxErr);
 }
 
 void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double))
 {
     int i;
+    double h = Task->h;
+    double mh = Task->h/1024.;
     for(i = 0; i<Task->n; i++)
     {
-        Task->U[i][0] = (*f)(Task->x0+Task->h*i,Task->y0);
-        Task->U[i][Task->n-1]=(*f)(Task->x0+Task->h*i,Task->y1);
+        Task->U[i][0] = (*f)(Task->x0+h*i,Task->y0);
+        Task->U[i][Task->n-1]=(*f)(Task->x0+h*i,Task->y1);
 
-        Task->U[0][i] = (*f)(Task->x0,Task->y0+Task->h*i);
-        Task->U[Task->n-1][i]=(*f)(Task->x1,Task->y0+Task->h*i);
+        Task->U[0][i] = (*f)(Task->x0,Task->y0+h*i);
+        Task->U[Task->n-1][i]=(*f)(Task->x1,Task->y0+h*i);
 
-        Task->dUdx[i][0] = 0.5*((*f)(Task->x0+Task->h*i+Task->h,Task->y0)-
-                                (*f)(Task->x0+Task->h*i-Task->h,Task->y0))/Task->h;
-        Task->dUdx[i][Task->n-1]=0.5*((*f)(Task->x0+Task->h*i+Task->h,Task->y1)
-                                  -(*f)(Task->x0+Task->h*i-Task->h,Task->y1))/Task->h;
+        Task->dUdx[i][0] = 0.5*((*f)(Task->x0+h*i+mh,Task->y0)-
+                                (*f)(Task->x0+h*i-mh,Task->y0))/mh;
+        Task->dUdx[i][Task->n-1]=0.5*((*f)(Task->x0+h*i+mh,Task->y1)
+                                     -(*f)(Task->x0+h*i-mh,Task->y1))/mh;
 
-        Task->dUdx[0][i] = ((*f)(Task->x0+Task->h,Task->y0+Task->h*i)
-                        -(*f)(Task->x0-Task->h,Task->y0+Task->h*i))/Task->h*0.5;
-        Task->dUdx[Task->n-1][i] = ((*f)(Task->x1+Task->h,Task->y0+Task->h*i)
-                                -(*f)(Task->x1-Task->h,Task->y0+Task->h*i))/Task->h*0.5;
+        Task->dUdx[0][i] = ((*f)(Task->x0+mh,Task->y0+h*i)
+                           -(*f)(Task->x0-mh,Task->y0+h*i))/mh*0.5;
+        Task->dUdx[Task->n-1][i] = ((*f)(Task->x1+mh,Task->y0+h*i)
+                                   -(*f)(Task->x1-mh,Task->y0+h*i))/mh*0.5;
 
-        Task->dUdy[i][0] = 0.5*((*f)(Task->x0+Task->h*i,Task->y0+Task->h)-
-                                (*f)(Task->x0+Task->h*i,Task->y0-Task->h))/Task->h;
-        Task->dUdy[i][Task->n-1]=0.5*((*f)(Task->x0+Task->h*i,Task->y1+Task->h)
-                                  -(*f)(Task->x0+Task->h*i,Task->y1-Task->h))/Task->h;
+        Task->dUdy[i][0] = 0.5*((*f)(Task->x0+h*i,Task->y0+mh)-
+                                (*f)(Task->x0+h*i,Task->y0-mh))/mh;
+        Task->dUdy[i][Task->n-1]=0.5*((*f)(Task->x0+h*i,Task->y1+mh)
+                                     -(*f)(Task->x0+h*i,Task->y1-mh))/mh;
 
-        Task->dUdy[0][i] = ((*f)(Task->x0,Task->y0+Task->h*i+Task->h)
-                        -(*f)(Task->x0,Task->y0+Task->h*i-Task->h))/Task->h*0.5;
-        Task->dUdy[Task->n-1][i] = ((*f)(Task->x1,Task->y0+Task->h*i+Task->h)
-                                -(*f)(Task->x1,Task->y0+Task->h*i-Task->h))/Task->h*0.5;
+        Task->dUdy[0][i] = ((*f)(Task->x0,Task->y0+h*i+mh)
+                           -(*f)(Task->x0,Task->y0+h*i-mh))/mh*0.5;
+        Task->dUdy[Task->n-1][i] = ((*f)(Task->x1,Task->y0+h*i+mh)
+                                   -(*f)(Task->x1,Task->y0+h*i-mh))/mh*0.5;
 
 
-        Task->dUdxdy[i][0] = 0.25*((*f)(Task->x0+Task->h*i+Task->h,Task->y0+Task->h)-
-                                  (*f)(Task->x0+Task->h*i+Task->h,Task->y0-Task->h)
-                                 -(*f)(Task->x0+Task->h*i-Task->h,Task->y0+Task->h)+
-                                  (*f)(Task->x0+Task->h*i-Task->h,Task->y0-Task->h)
-                                  )/Task->h/Task->h;
-        Task->dUdxdy[i][Task->n-1]=0.25*((*f)(Task->x0+Task->h*i+Task->h,Task->y1+Task->h)
-                                       -(*f)(Task->x0+Task->h*i+Task->h,Task->y1-Task->h)
-                                       -(*f)(Task->x0+Task->h*i-Task->h,Task->y1+Task->h)
-                                       +(*f)(Task->x0+Task->h*i-Task->h,Task->y1-Task->h)
-                                        )/Task->h/Task->h;
+        Task->dUdxdy[i][0] =0.25*((*f)(Task->x0+h*i+mh,Task->y0+mh)-
+                                  (*f)(Task->x0+h*i+mh,Task->y0-mh)
+                                 -(*f)(Task->x0+h*i-mh,Task->y0+mh)+
+                                  (*f)(Task->x0+h*i-mh,Task->y0-mh)
+                                  )/mh/mh;
+        Task->dUdxdy[i][Task->n-1]=0.25*((*f)(Task->x0+h*i+mh,Task->y1+mh)
+                                       -(*f)(Task->x0+h*i+mh,Task->y1-mh)
+                                       -(*f)(Task->x0+h*i-mh,Task->y1+mh)
+                                       +(*f)(Task->x0+h*i-mh,Task->y1-mh)
+                                        )/mh/mh;
 
-        Task->dUdxdy[0][i] = ( (*f)(Task->x0+Task->h,Task->y0+Task->h*i+Task->h)
-                              -(*f)(Task->x0+Task->h,Task->y0+Task->h*i-Task->h)
-                              -(*f)(Task->x0-Task->h,Task->y0+Task->h*i+Task->h)
-                              +(*f)(Task->x0-Task->h,Task->y0+Task->h*i-Task->h)
-                              )/Task->h/Task->h*0.25;
-        Task->dUdxdy[Task->n-1][i] = ((*f)(Task->x1+Task->h,Task->y0+Task->h*i+Task->h)
-                                     -(*f)(Task->x1+Task->h,Task->y0+Task->h*i-Task->h)
-                                     -(*f)(Task->x1-Task->h,Task->y0+Task->h*i+Task->h)
-                                     +(*f)(Task->x1-Task->h,Task->y0+Task->h*i-Task->h)
-                                      )/Task->h/Task->h*0.25;
+        Task->dUdxdy[0][i] = ( (*f)(Task->x0+mh,Task->y0+h*i+mh)
+                              -(*f)(Task->x0+mh,Task->y0+h*i-mh)
+                              -(*f)(Task->x0-mh,Task->y0+h*i+mh)
+                              +(*f)(Task->x0-mh,Task->y0+h*i-mh)
+                              )/mh/mh*0.25;
+        Task->dUdxdy[Task->n-1][i] = ((*f)(Task->x1+mh,Task->y0+h*i+mh)
+                                     -(*f)(Task->x1+mh,Task->y0+h*i-mh)
+                                     -(*f)(Task->x1-mh,Task->y0+h*i+mh)
+                                     +(*f)(Task->x1-mh,Task->y0+h*i-mh)
+                                      )/mh/mh*0.25;
 
 
     }
+}
+
+
+
+void Grid_IDO_IterationSet      (Grid *Task, double omega, int N)
+{
+    int i;
+    for(i=0;i<N;i++)
+    {
+//        if(i%5==0)
+//        {
+//            printf("%d\t", i);
+//            Grid_print_error(&test,&boundary);
+//        }
+        Grid_IDO_IterationModified(Task,omega);
+    }
+}
+
+void Grid_Cross_IterationSet    (Grid *Task, double omega, int N)
+{
+    int i;
+    for(i=0;i<N;i++)
+    {
+//        if(i%5==0)
+//        {
+//            printf("%d\t", i);
+//            Grid_print_error(&test,&boundary);
+//        }
+        Grid_CrossIteration(Task,omega);
+    }
+}
+
+void Grid_Cross_IterationSet_w_f(Grid *Task, double omega, Grid *force, int N)
+{
+    int i;
+    for(i=0;i<N;i++)
+    {
+//        if(i%5==0)
+//        {
+//            printf("%d\t", i);
+//            Grid_print_error(&test,&boundary);
+//        }
+        Grid_CrossIteration_w_force(Task,omega,force);
+    }
+
+
 }

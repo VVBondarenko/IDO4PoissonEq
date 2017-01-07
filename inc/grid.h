@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-
+#include <omp.h>
 
 typedef struct Grid {
     double **U;
@@ -31,11 +31,17 @@ void Grid_InitDirihlet  (Grid *Task, double (*f)(double, double));
 void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double));
 double Grid_Interpolate (Grid *Task, double x, double y); //TBD
 
-void Grid_CrossIteration(Grid *Task);
+void Grid_CrossIteration        (Grid *Task, double omega);
+void Grid_Cross_IterationSet    (Grid *Task, double omega, int N);
+void Grid_CrossIteration_w_force(Grid *Task, double omega, Grid *force);
+void Grid_Cross_IterationSet_w_f(Grid *Task, double omega, Grid *force, int N);
 
 void Grid_IDO_InitDeriv (Grid *Task);
 void Grid_IDO_Iteration (Grid *Task);
-void Grid_IDO_Iteration_2 (Grid *Task, double omega);
+void Grid_IDO_IterationOriginal (Grid *Task, double omega);
+void Grid_IDO_IterationModified (Grid *Task, double omega);
+void Grid_IDO_IterationSet      (Grid *Task, double omega, int N);
+
 
 void Grid_Plot          (Grid *Task);
 void Grid_Plot_error    (Grid *Task, double (*exact)(double,double));

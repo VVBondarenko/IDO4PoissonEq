@@ -1,0 +1,20 @@
+#!/usr/bin/gnuplot -persist
+
+#set pm3d; set palette
+#set dgrid3d 257,257
+#set hidden3d
+
+unset surface
+set pm3d at s
+set palette rgbformulae 33,13,10
+set dgrid3d 64,64
+set contour
+set cntrparam levels incremental -2,0.01,2
+set zlabel  offset character 1, 0, 0 font "" textcolor lt -1 norotate
+set table '.temp.dat'
+splot "Plot.dat" with line ls 7 palette notitle
+unset table
+reset
+set term wxt
+set view map
+plot ".temp.dat" with line lt -1
