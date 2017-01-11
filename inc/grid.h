@@ -42,7 +42,9 @@ void Grid_IDO_InitDeriv (Grid *Task);
 void Grid_IDO_Iteration (Grid *Task);
 void Grid_IDO_IterationOriginal (Grid *Task, double omega);
 void Grid_IDO_IterationModified (Grid *Task, double omega);
+void Grid_IDO_IterationModified_w_f(Grid *Task, double omega, Grid *force);
 void Grid_IDO_IterationSet      (Grid *Task, double omega, int N);
+void Grid_IDO_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N);
 
 
 void Grid_Plot          (Grid *Task);
