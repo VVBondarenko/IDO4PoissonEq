@@ -35,6 +35,8 @@ void Grid_CrossIteration        (Grid *Task, double omega);
 void Grid_Cross_IterationSet    (Grid *Task, double omega, int N);
 void Grid_CrossIteration_w_force(Grid *Task, double omega, Grid *force);
 void Grid_Cross_IterationSet_w_f(Grid *Task, double omega, Grid *force, int N);
+void Grid_Cross_IterationSet_w_f_w_autostop(Grid *Task, double omega, Grid *force, int N,
+                                            double prev_diff, double *return_diff);
 
 void Grid_IDO_InitDeriv (Grid *Task);
 void Grid_IDO_Iteration (Grid *Task);

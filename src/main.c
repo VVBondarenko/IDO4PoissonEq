@@ -90,8 +90,8 @@ int main()
     omp_set_dynamic(1);
     omp_set_num_threads(8);
 
-    double Re = 10.;
-    int Nodes = 128, IterQ = 6000;
+    double Re = 5.;
+    int Nodes = 64, IterQ = 6000;
     Grid curl, stream, force;
     Grid_Init(&curl,    0, 1, 0, 1, Nodes, 0.001);
     Grid_Init(&stream,  0, 1, 0, 1, Nodes, 0.001);
@@ -104,19 +104,20 @@ int main()
     Grid_Cross_IterationSet(&curl,1.,IterQ);
     findForce(&force,&stream,&curl,Re);
 
+    double streamDiff = 10., curlDiff = 10.;
+    double prevStreamDiff = 1., prevCurlDiff = 10.;
     int i;
-    for(i=0;i<150;i++)
+    for(i=0;i<24;i++)
     {
         printf("%d\n",i);
-        Grid_Cross_IterationSet_w_f(&stream,1.,&curl,IterQ);
+        Grid_Cross_IterationSet_w_f_w_autostop(&stream,1.,&curl,IterQ,1., &streamDiff);
         curl_InitDirihlet(&curl,&stream);
-        Grid_Cross_IterationSet_w_f(&curl,1.,&force,IterQ);
+        Grid_Cross_IterationSet_w_f_w_autostop(&curl,1.,&force,IterQ,prevCurlDiff, &curlDiff);
         findForce(&force,&stream,&curl,Re);
-        if(i%10==0)
-        {
-            Grid_Plot(&stream);
-            system("./lines_of_level &");
-        }
+        if(curlDiff == prevCurlDiff)
+            break;
+        else
+            prevCurlDiff = curlDiff;
     }
 
     Grid_Plot(&stream);
