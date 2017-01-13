@@ -130,58 +130,109 @@ void curl_InitDirihlet(Grid *curl, Grid* stream)
 
 void curl_InitDirihlet_IDO(Grid *curl, Grid* stream)
 {
-    //for all boundary nodes, set values form f to array
-    int i,n = curl->n;
-    for(i = 1; i<curl->n-1; i++)
-    {
-        curl->U[i][0] = (1./stream->h*(stream->U[i][2]
-                         -2.*stream->U[i][1]
-                            +stream->U[i][0])
-                      -0.25*(stream->dUdy[i][2]-stream->dUdy[i][0]))/stream->h;
-        curl->U[i][n-1] = (1./stream->h*(stream->U[i][n-1]
-                           -2.*stream->U[i][n-2]
-                              +stream->U[i][n-3])
-                        -0.25*(stream->dUdy[i][n-1]-stream->dUdy[i][n-3]))/stream->h;
-        curl->U[0][i] = (1./stream->h*(stream->U[2][i]
-                         -2.*stream->U[1][i]
-                            +stream->U[0][i])
-                      -0.25*(stream->dUdx[2][i]-stream->dUdx[0][i]))/stream->h;
-        curl->U[n-1][i] = (1./stream->h*(stream->U[n-1][i]
-                           -2.*stream->U[n-2][i]
-                              +stream->U[n-3][i])
-                        -0.25*(stream->dUdx[n-1][i]-stream->dUdx[n-3][i]))/stream->h;
+	//for all boundary nodes, set values form f to array
+	int i,n = curl->n;
+	for(i = 1; i<curl->n-1; i++)
+	{
+		curl->U[i][0] = (1./stream->h*(stream->U[i][2]
+						 -2.*stream->U[i][1]
+							+stream->U[i][0])
+					  -0.25*(stream->dUdy[i][2]-stream->dUdy[i][0]))/stream->h;
+		curl->U[i][n-1] = (1./stream->h*(stream->U[i][n-1]
+						   -2.*stream->U[i][n-2]
+							  +stream->U[i][n-3])
+						-0.25*(stream->dUdy[i][n-1]-stream->dUdy[i][n-3]))/stream->h;
+		curl->U[0][i] = (1./stream->h*(stream->U[2][i]
+						 -2.*stream->U[1][i]
+							+stream->U[0][i])
+					  -0.25*(stream->dUdx[2][i]-stream->dUdx[0][i]))/stream->h;
+		curl->U[n-1][i] = (1./stream->h*(stream->U[n-1][i]
+						   -2.*stream->U[n-2][i]
+							  +stream->U[n-3][i])
+						-0.25*(stream->dUdx[n-1][i]-stream->dUdx[n-3][i]))/stream->h;
 
-        curl->dUdx[i][0] = 0.;
-        curl->dUdx[i][n-1] = 0.;
-        curl->dUdy[0][i] = 0.;
-        curl->dUdy[n-1][i] = 0.;
-        curl->dUdxdy[i][0] = 0.;
-        curl->dUdxdy[i][n-1] = 0.;
-        curl->dUdxdy[0][i] = 0.;
-        curl->dUdxdy[n-1][i] = 0.;
+		curl->dUdx[i][0] = 0.;
+		curl->dUdx[i][n-1] = 0.;
+		curl->dUdy[0][i] = 0.;
+		curl->dUdy[n-1][i] = 0.;
+		curl->dUdxdy[i][0] = 0.;
+		curl->dUdxdy[i][n-1] = 0.;
+		curl->dUdxdy[0][i] = 0.;
+		curl->dUdxdy[n-1][i] = 0.;
 
-        curl->dUdy[i][0] = (1.25/stream->h*(stream->U[i][2]-stream->U[i][0])
-                -0.25*(stream->dUdy[i][2]
-                    +8*stream->dUdy[i][1]
-                      +stream->dUdy[i][0]))/stream->h/stream->h;
+		curl->dUdy[i][0] = (1.25/stream->h*(stream->U[i][2]-stream->U[i][0])
+				-0.25*(stream->dUdy[i][2]
+					+8*stream->dUdy[i][1]
+					  +stream->dUdy[i][0]))/stream->h/stream->h;
 
-        curl->dUdy[i][n-1] = (1.25/stream->h*(stream->U[i][n-1]-stream->U[i][n-3])
-                -0.25*(stream->dUdy[i][n-1]
-                    +8*stream->dUdy[i][n-2]
-                      +stream->dUdy[i][n-3]))/stream->h/stream->h;
+		curl->dUdy[i][n-1] = (1.25/stream->h*(stream->U[i][n-1]-stream->U[i][n-3])
+				-0.25*(stream->dUdy[i][n-1]
+					+8*stream->dUdy[i][n-2]
+					  +stream->dUdy[i][n-3]))/stream->h/stream->h;
 
-        curl->dUdx[0][i] = (1.25/stream->h*(stream->U[2][i]-stream->U[0][i])
-                -0.25*(stream->dUdx[2][i]
-                    +8*stream->dUdx[1][i]
-                      +stream->dUdx[0][i]))/stream->h/stream->h;
-        curl->dUdx[n-1][i] = (1.25/stream->h*(stream->U[n-1][i]-stream->U[n-3][i])
-                -0.25*(stream->dUdx[n-1][i]
-                    +8*stream->dUdx[n-2][i]
-                      +stream->dUdx[n-3][i]))/stream->h/stream->h;
+		curl->dUdx[0][i] = (1.25/stream->h*(stream->U[2][i]-stream->U[0][i])
+				-0.25*(stream->dUdx[2][i]
+					+8*stream->dUdx[1][i]
+					  +stream->dUdx[0][i]))/stream->h/stream->h;
+		curl->dUdx[n-1][i] = (1.25/stream->h*(stream->U[n-1][i]-stream->U[n-3][i])
+				-0.25*(stream->dUdx[n-1][i]
+					+8*stream->dUdx[n-2][i]
+					  +stream->dUdx[n-3][i]))/stream->h/stream->h;
 
 
 
-    }
+	}
+}
+
+void curl_InitDirihlet_IDO_v2(Grid *curl, Grid* stream)
+{
+	//for all boundary nodes, set values form f to array
+	int i,n = curl->n;
+	double h = curl->h;
+	for(i = 1; i<curl->n-1; i++)
+	{
+		curl->U[i][0] = (3.5/h/h)*stream->U[i][2]+(8./h/h)*stream->U[i][1]+(-11.5/h/h)*stream->U[i][0]
+				+(-1/h)*stream->dUdy[i][2]+(-8./h)*stream->dUdy[i][1]+(-6./h)*stream->dUdy[i][0];
+		curl->U[i][n-1] = (-11.5/h/h)*stream->U[i][2]+(8./h/h)*stream->U[i][1]+(3.5/h/h)*stream->U[i][0]
+				+(6./h)*stream->dUdy[i][2]+(8./h)*stream->dUdy[i][1]+(1./h)*stream->dUdy[i][0];
+
+		curl->U[0][i] = (3.5/h/h)*stream->U[2][i]+(8./h/h)*stream->U[1][i]+(-11.5/h/h)*stream->U[0][i]
+				+(-1/h)*stream->dUdx[2][i]+(-8./h)*stream->dUdx[1][i]+(-6./h)*stream->dUdx[0][i];
+		curl->U[n-1][i] = (-11.5/h/h)*stream->U[2][i]+(8./h/h)*stream->U[1][i]+(3.5/h/h)*stream->U[0][i]
+				+(6./h)*stream->dUdx[2][i]+(8./h)*stream->dUdx[1][i]+(1./h)*stream->dUdx[0][i];
+
+		curl->dUdx[i][0] = 0.;
+		curl->dUdx[i][n-1] = 0.;
+		curl->dUdy[0][i] = 0.;
+		curl->dUdy[n-1][i] = 0.;
+		curl->dUdxdy[i][0] = 0.;
+		curl->dUdxdy[i][n-1] = 0.;
+		curl->dUdxdy[0][i] = 0.;
+		curl->dUdxdy[n-1][i] = 0.;
+
+		//todo: calculate coefficients for f''' and use theme here...
+		curl->dUdy[i][0] = (1.25/stream->h*(stream->U[i][2]-stream->U[i][0])
+				-0.25*(stream->dUdy[i][2]
+					+8*stream->dUdy[i][1]
+					  +stream->dUdy[i][0]))/stream->h/stream->h;
+
+		curl->dUdy[i][n-1] = (1.25/stream->h*(stream->U[i][n-1]-stream->U[i][n-3])
+				-0.25*(stream->dUdy[i][n-1]
+					+8*stream->dUdy[i][n-2]
+					  +stream->dUdy[i][n-3]))/stream->h/stream->h;
+
+		curl->dUdx[0][i] = (1.25/stream->h*(stream->U[2][i]-stream->U[0][i])
+				-0.25*(stream->dUdx[2][i]
+					+8*stream->dUdx[1][i]
+					  +stream->dUdx[0][i]))/stream->h/stream->h;
+		curl->dUdx[n-1][i] = (1.25/stream->h*(stream->U[n-1][i]-stream->U[n-3][i])
+				-0.25*(stream->dUdx[n-1][i]
+					+8*stream->dUdx[n-2][i]
+					  +stream->dUdx[n-3][i]))/stream->h/stream->h;
+
+
+
+	}
 }
 
 int stream_curl_by_cross()
@@ -228,8 +279,8 @@ int main()
     omp_set_dynamic(1);
     omp_set_num_threads(8);
 
-    double Re = 1., omega = 1.;
-    int Nodes = 32, IterQ = 5000;
+	double Re = 5., omega = 1.;
+	int Nodes = 32, IterQ = 5000;
     Grid curl, stream, force;
     Grid_Init(&curl,    0, 1, 0, 1, Nodes, 0.001);
     Grid_Init(&stream,  0, 1, 0, 1, Nodes, 0.001);
@@ -238,7 +289,7 @@ int main()
 
 
     Grid_IDO_IterationSet(&stream,1.,IterQ);
-    curl_InitDirihlet_IDO(&curl,&stream);
+	curl_InitDirihlet_IDO_v2(&curl,&stream);
     Grid_IDO_IterationSet(&curl,1.,IterQ);
     findForce_IDO(&force,&stream,&curl,Re);
     Grid_Plot(&stream);
@@ -250,9 +301,9 @@ int main()
     for(i=0;i<100;i++)
     {
         printf("%d\n",i);
-        Grid_IDO_Mod_IterationSet_w_f(&stream,omega,&curl,IterQ);
-        curl_InitDirihlet_IDO(&curl,&stream);
-        Grid_IDO_Mod_IterationSet_w_f(&curl,omega,&force,IterQ);
+		Grid_IDO_Ori_IterationSet_w_f(&stream,omega,&curl,IterQ);
+		curl_InitDirihlet_IDO_v2(&curl,&stream);
+		Grid_IDO_Ori_IterationSet_w_f(&curl,omega,&force,IterQ);
         findForce_IDO(&force,&stream,&curl,Re);
 
         if(i%10==0)

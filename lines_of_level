@@ -7,7 +7,7 @@
 unset surface
 set pm3d at s
 set palette rgbformulae 33,13,10
-set dgrid3d 64,64
+set dgrid3d 32,32
 set contour
 set cntrparam levels incremental -2,0.02,2
 set zlabel  offset character 1, 0, 0 font "" textcolor lt -1 norotate
@@ -17,4 +17,6 @@ unset table
 reset
 set term wxt size 900, 800
 set view map
+set xrange [0:1]
+set yrange [0:1]
 plot ".temp.dat" with line lt -1
