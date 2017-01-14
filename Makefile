@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc-6
 CFLAGS=-I./inc/ -g -lm -fopenmp -O3 -ffast-math
 #-lgsl -lgslcblas
 
@@ -14,8 +14,8 @@ OBJ = main.o \
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 all:
-	$(CC) -c $(SRC) $(CFLAGS)
-
+	$(CC) -c $(SRC) $(CFLAGS); \
+    $(CC) $(OBJ) $(CFLAGS) -o solver
 build: $(OBJ)
 	$(CC) $(OBJ) $(CFLAGS) -o solver
 

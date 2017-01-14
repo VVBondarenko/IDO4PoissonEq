@@ -3,7 +3,6 @@
 
 double boundary(double x, double y)
 {
-//    return cos(x)*cos(y);
     return x*x-y*y;
 }
 
@@ -11,9 +10,7 @@ int tester()
 {
     Grid test;
     Grid_Init(&test, -M_PI, M_PI, -M_PI, M_PI, 64, 0.001);
-//    Grid_InitDirihlet(&test, &boundary); //checked
     Grid_InitDirihlet_w_derivatives(&test, &boundary);
-//    Grid_IDO_InitDeriv(&test);
 
     int i;
     for(i=0;i<5000;i++)
@@ -23,8 +20,6 @@ int tester()
             printf("%d\t", i);
             Grid_print_error(&test,&boundary);
         }
-//        Grid_CrossIteration(&test,1.);
-//        Grid_IDO_IterationModified(&test,1.);
         Grid_IDO_IterationOriginal(&test,1.);
     }
     Grid_Plot(&test);
@@ -115,7 +110,7 @@ void findForce_IDO(Grid *force, Grid* stream, Grid* curl, double Reynolds)
 }
 
 
-void curl_InitDirihlet(Grid *curl, Grid* stream)
+void curl_InitDirichlet(Grid *curl, Grid* stream)
 {
     //for all boundary nodes, set values form f to array
     int i,n = curl->n;
@@ -128,7 +123,7 @@ void curl_InitDirihlet(Grid *curl, Grid* stream)
     }
 }
 
-void curl_InitDirihlet_IDO(Grid *curl, Grid* stream)
+void curl_InitDirichlet_IDO(Grid *curl, Grid* stream)
 {
 	//for all boundary nodes, set values form f to array
 	int i,n = curl->n;
@@ -184,7 +179,7 @@ void curl_InitDirihlet_IDO(Grid *curl, Grid* stream)
 	}
 }
 
-void curl_InitDirihlet_IDO_v2(Grid *curl, Grid* stream)
+void curl_InitDirichlet_IDO_v2(Grid *curl, Grid* stream)
 {
 	//for all boundary nodes, set values form f to array
 	int i,n = curl->n;
@@ -250,7 +245,7 @@ int stream_curl_by_cross()
 
 
     Grid_Cross_IterationSet(&stream,1.,IterQ);
-    curl_InitDirihlet(&curl,&stream);
+    curl_InitDirichlet(&curl,&stream);
     Grid_Cross_IterationSet(&curl,1.,IterQ);
     findForce(&force,&stream,&curl,Re);
 
@@ -261,7 +256,7 @@ int stream_curl_by_cross()
     {
         printf("\n%d\t",i);
         Grid_Cross_IterationSet_w_f_w_autostop(&stream,omega,&curl,IterQ,1., &streamDiff);
-        curl_InitDirihlet(&curl,&stream);
+        curl_InitDirichlet(&curl,&stream);
         Grid_Cross_IterationSet_w_f_w_autostop(&curl,omega,&force,IterQ, prevCurlDiff, &curlDiff);
         findForce(&force,&stream,&curl,Re);
         if(curlDiff == prevCurlDiff)
@@ -289,12 +284,10 @@ int main()
 
 
     Grid_IDO_IterationSet(&stream,1.,IterQ);
-	curl_InitDirihlet_IDO_v2(&curl,&stream);
+	curl_InitDirichlet_IDO_v2(&curl,&stream);
     Grid_IDO_IterationSet(&curl,1.,IterQ);
     findForce_IDO(&force,&stream,&curl,Re);
     Grid_Plot(&stream);
-//    system("./lines_of_level");
-//    system("sleep 2");
     double streamDiff = 100., curlDiff = 100.;
     double prevStreamDiff = 1., prevCurlDiff = 100.;
     int i;
@@ -302,7 +295,7 @@ int main()
     {
         printf("%d\n",i);
 		Grid_IDO_Ori_IterationSet_w_f(&stream,omega,&curl,IterQ);
-		curl_InitDirihlet_IDO_v2(&curl,&stream);
+		curl_InitDirichlet_IDO_v2(&curl,&stream);
 		Grid_IDO_Ori_IterationSet_w_f(&curl,omega,&force,IterQ);
         findForce_IDO(&force,&stream,&curl,Re);
 
