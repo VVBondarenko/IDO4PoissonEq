@@ -1,5 +1,5 @@
-CC=gcc-6
-CFLAGS=-I./inc/ -g -lm -fopenmp -O3 -ffast-math
+CC=gcc
+CFLAGS=-I./inc/ -g -lm -fopenmp -fopenmp-simd -O3 -ffast-math
 #-lgsl -lgslcblas
 
 SRC = src/main.c \

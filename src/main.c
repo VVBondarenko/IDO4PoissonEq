@@ -230,7 +230,7 @@ void curl_InitDirichlet_IDO_v2(Grid *curl, Grid* stream)
 	}
 }
 
-int stream_curl_by_cross()
+int main()
 {
     omp_set_dynamic(1);
     omp_set_num_threads(8);
@@ -269,7 +269,7 @@ int stream_curl_by_cross()
     return 0;
 }
 
-int main()
+int IDO_main()
 {
     omp_set_dynamic(1);
     omp_set_num_threads(8);

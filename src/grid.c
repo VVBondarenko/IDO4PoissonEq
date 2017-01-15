@@ -876,15 +876,16 @@ void Grid_Cross_IterationSet_w_f_w_autostop(Grid *Task, double omega, Grid *forc
 
     for(n=0;n<N;n++)
     {
-#pragma omp parallel for shared(nU,omega,Task,force) private(i,j)
-        for(i=1; i<Task->n-1; i++)
+//#pragma omp parallel for shared(nU,omega,Task,force) private(i,j)
+#pragma omp simd
+        for (i = 1; i < Task->n - 1; i++)
         {
-            for(j=1; j<Task->n-1; j++)
+            for (j = 1; j < Task->n - 1; j++)
             {
-                nU[i][j] = (1-omega)*Task->U[i][j]
-                        +omega*0.25*(Task->U[i+1][j]+Task->U[i-1][j]
-                        +Task->U[i][j+1]+Task->U[i][j-1]
-                        -force->U[i][j]*Task->h*Task->h);
+                nU[i][j] = (1 - omega) * Task->U[i][j]
+                           + omega * 0.25 * (Task->U[i + 1][j] + Task->U[i - 1][j]
+                                             + Task->U[i][j + 1] + Task->U[i][j - 1]
+                                             - force->U[i][j] * Task->h * Task->h);
             }
         }
 
