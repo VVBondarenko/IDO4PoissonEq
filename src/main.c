@@ -1,4 +1,19 @@
 #include <grid.h>
+/*
+ * Tasks for the project structure
+ *  todo: create UML diagram for this project
+ *  todo: optimize classes
+ *  todo: move cross and IDO solvers to their own classes
+ *
+ * Tasks for coding the basis system
+ *  todo: implement SG-IDO
+ *  todo: implement multigrid cross iterations
+ *  todo: implement multigrid SG-IDO
+ *
+ * Tasks for coding final tests
+ *  todo: implement output in format of accuracy tables and graphs
+ *  todo: start using unit tests in development process
+ */
 
 
 double boundary(double x, double y)
@@ -234,7 +249,6 @@ int main()
 {
     omp_set_dynamic(1);
     omp_set_num_threads(8);
-
     double Re = 5., omega = 0.99;
     int Nodes = 64, IterQ = 5000;
     Grid curl, stream, force;
