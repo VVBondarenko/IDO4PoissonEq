@@ -67,7 +67,7 @@ void Grid_Plot(Grid *Task)
                                                        Task->y0+j*Task->h,
                                                        Task->U[i][j]);
 }
-
+/*
 void Grid_CrossIteration(Grid *Task, double omega)
 {
     int i,j;
@@ -135,7 +135,8 @@ void Grid_CrossIteration_w_force(Grid *Task, double omega, Grid *force)
         free((void *)nU[i]);
     free((void *)nU);
 }
-
+*/
+/*
 void Grid_IDO_Iteration(Grid *Task)
 {
     int i,j;
@@ -658,7 +659,7 @@ void Grid_IDO_InitDeriv(Grid *Task)
         }
     }
 }
-
+*/
 
 void Grid_InitByFunction(Grid *Target, double (*func)(double, double),
                          double x0, double x1,
@@ -817,7 +818,7 @@ void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double))
 
     }
 }
-
+/*
 void Grid_IDO_IterationSet      (Grid *Task, double omega, int N)
 {
     int i;
@@ -844,7 +845,8 @@ void Grid_IDO_Ori_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int 
         Grid_IDO_IterationOriginal_w_f(Task,omega,force);
     }
 }
-
+*/
+/*
 void Grid_Cross_IterationSet    (Grid *Task, double omega, int N)
 {
     int i;
@@ -913,3 +915,5 @@ void Grid_Cross_IterationSet_w_f_w_autostop(Grid *Task, double omega, Grid *forc
     free((void *)nU);
 
 }
+
+ */

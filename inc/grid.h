@@ -31,6 +31,7 @@ void Grid_InitDirihlet  (Grid *Task, double (*f)(double, double));
 void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double));
 double Grid_Interpolate (Grid *Task, double x, double y); //TBD
 
+/*
 void Grid_CrossIteration        (Grid *Task, double omega);
 void Grid_Cross_IterationSet    (Grid *Task, double omega, int N);
 void Grid_CrossIteration_w_force(Grid *Task, double omega, Grid *force);
@@ -47,7 +48,7 @@ void Grid_IDO_IterationModified_w_f(Grid *Task, double omega, Grid *force);
 void Grid_IDO_IterationSet      (Grid *Task, double omega, int N);
 void Grid_IDO_Mod_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N);
 void Grid_IDO_Ori_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N);
-
+*/
 
 void Grid_Plot          (Grid *Task);
 void Grid_Plot_error    (Grid *Task, double (*exact)(double,double));
