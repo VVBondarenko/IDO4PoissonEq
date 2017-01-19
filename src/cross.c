@@ -116,6 +116,7 @@ void Cross_IterationSet_w_f_w_autostop(Grid *Task, double omega, Grid *force, in
             }
         }
 
+//#pragma omp simd
         for(i=1; i<Task->n-1; i++)
             for(j=1; j<Task->n-1; j++)
                 diff = fmax(diff, fabs(nU[i][j] - Task->U[i][j]));
@@ -127,7 +128,7 @@ void Cross_IterationSet_w_f_w_autostop(Grid *Task, double omega, Grid *force, in
         }
         else
             *return_diff = diff;
-
+//#pragma omp simd
         for(i=1; i<Task->n-1; i++)
             for(j=1; j<Task->n-1; j++)
                 Task->U[i][j] = nU[i][j];

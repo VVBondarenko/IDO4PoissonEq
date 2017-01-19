@@ -4,7 +4,7 @@
 
 #include <ido_original.h>
 
-void Grid_IDO_InitDeriv(Grid *Task)
+void IDO_InitDeriv(Grid *Task)
 {
     int i,j;
     for(i=0;i<Task->n;i++)
@@ -56,7 +56,7 @@ void Grid_IDO_InitDeriv(Grid *Task)
     }
 }
 
-void Grid_IDO_Iteration(Grid *Task)
+void IDO_Iteration(Grid *Task)
 {
     int i,j;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -136,7 +136,7 @@ void Grid_IDO_Iteration(Grid *Task)
     free((void *)ndUdy);
 }
 
-void Grid_IDO_IterationOriginal(Grid *Task, double omega)
+void IDO_IterationOriginal(Grid *Task, double omega)
 {
     int i,j;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -212,7 +212,7 @@ void Grid_IDO_IterationOriginal(Grid *Task, double omega)
     free((void *)ndUdxdy);
 }
 
-void Grid_IDO_IterationOriginal_w_f(Grid *Task, double omega, Grid *force)
+void IDO_IterationOriginal_w_f(Grid *Task, double omega, Grid *force)
 {
     int i,j;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -289,7 +289,7 @@ void Grid_IDO_IterationOriginal_w_f(Grid *Task, double omega, Grid *force)
     free((void *)ndUdxdy);
 }
 
-void Grid_IDO_IterationModified(Grid *Task, double omega)
+void IDO_IterationModified(Grid *Task, double omega)
 {
     int i,j,p;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -408,7 +408,7 @@ void Grid_IDO_IterationModified(Grid *Task, double omega)
     free((void *)ndUdxdy);
 }
 
-void Grid_IDO_IterationModified_w_f(Grid *Task, double omega, Grid *force)
+void IDO_IterationModified_w_f(Grid *Task, double omega, Grid *force)
 {
     int i,j,p;
     //define new temporary arrays for U, dUdx, dUdy on (n+1) iteration
@@ -527,29 +527,29 @@ void Grid_IDO_IterationModified_w_f(Grid *Task, double omega, Grid *force)
     free((void *)ndUdxdy);
 }
 
-void Grid_IDO_IterationSet      (Grid *Task, double omega, int N)
+void IDO_IterationSet      (Grid *Task, double omega, int N)
 {
     int i;
     for(i=0;i<N;i++)
     {
-        Grid_IDO_IterationModified(Task,omega);
+        IDO_IterationModified(Task,omega);
     }
 }
 
-void Grid_IDO_Mod_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N)
+void IDO_Mod_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N)
 {
     int i;
     for(i=0;i<N;i++)
     {
-        Grid_IDO_IterationModified_w_f(Task,omega,force);
+        IDO_IterationModified_w_f(Task,omega,force);
     }
 }
 
-void Grid_IDO_Ori_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N)
+void IDO_Ori_IterationSet_w_f  (Grid *Task, double omega, Grid *force, int N)
 {
     int i;
     for(i=0;i<N;i++)
     {
-        Grid_IDO_IterationOriginal_w_f(Task,omega,force);
+        IDO_IterationOriginal_w_f(Task,omega,force);
     }
 }
