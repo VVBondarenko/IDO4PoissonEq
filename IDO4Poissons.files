@@ -10,3 +10,4 @@ lines_of_level
 Makefile
 src/gs-ido.c
 inc/gs-ido.h
+src/main_test.c

@@ -54,6 +54,31 @@ void Grid_InitDirihlet(Grid *Task, double (*f)(double, double))
     }
 }
 
+void Grid_InitDirihlet_w_d(Grid *Task, double (*f)(double, double))
+{
+    //for all boundary nodes, set values form f to array
+    int i; double h = 1./1024.;
+    for(i = 0; i<Task->n; i++)
+    {
+        Task->U[i][0] = (*f)(Task->x0+Task->h*i,Task->y0);
+        Task->U[i][Task->n-1]=(*f)(Task->x0+Task->h*i,Task->y1);
+
+        Task->dUdx[i][0] = ((*f)(Task->x0+Task->h*i+h,Task->y0)
+                           -(*f)(Task->x0+Task->h*i-h,Task->y0))*0.5/h;
+        Task->dUdx[i][Task->n-1] = ((*f)(Task->x0+Task->h*i+h,Task->y1)
+                                   -(*f)(Task->x0+Task->h*i-h,Task->y1))*0.5/h;
+
+
+        Task->U[0][i] = (*f)(Task->x0,Task->y0+Task->h*i);
+        Task->U[Task->n-1][i]=(*f)(Task->x1,Task->y0+Task->h*i);
+
+        Task->dUdy[0][i] = ((*f)(Task->x0,Task->y0+Task->h*i+h)
+                           -(*f)(Task->x0,Task->y0+Task->h*i-h))*0.5/h;
+        Task->dUdy[Task->n-1][i] = ((*f)(Task->x1,Task->y0+Task->h*i+h)
+                                   -(*f)(Task->x1,Task->y0+Task->h*i-h))*0.5/h;
+    }
+}
+
 void Grid_Plot(Grid *Task)
 {
     // for all values in U array, print values of its coords and U
@@ -62,10 +87,13 @@ void Grid_Plot(Grid *Task)
 
     output = fopen("Plot.dat", "w");
     for(i = 0; i < Task->n; i++)
+    {
         for(j = 0; j < Task->n; j++)
             fprintf(output,"%15.15f %15.15f %15.15f\n",Task->x0+i*Task->h,
                                                        Task->y0+j*Task->h,
                                                        Task->U[i][j]);
+            fprintf(output,"\n");
+    }
 }
 
 void Grid_InitByFunction(Grid *Target, double (*func)(double, double),
@@ -137,6 +165,7 @@ void Grid_Plot_error(Grid *Task, double (*exact)(double, double))
                                       -(*exact)(Task->x0+i*Task->h,
                                                 Task->y0+j*Task->h)));
         }
+        fprintf(output,"\n");
     }
     printf("%10.10f\n",maxErr);
     fclose(output);
