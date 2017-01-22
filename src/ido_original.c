@@ -14,8 +14,8 @@ void IDO_InitDeriv(Grid *Task)
             //init dudx and dudy
             if(i!=0 && i!=Task->n-1)
             {
-//                Task->dUdx[i][j] =
-//                        0.5*(Task->U[i+1][j]-Task->U[i-1][j])/Task->h;
+                Task->dUdx[i][j] =
+                        0.5*(Task->U[i+1][j]-Task->U[i-1][j])/Task->h;
             }
             else
             {
@@ -28,8 +28,8 @@ void IDO_InitDeriv(Grid *Task)
 
             if(j!=0 && j!=Task->n-1)
             {
-//                Task->dUdy[i][j] =
-//                        0.5*(Task->U[i][j+1]-Task->U[i][j-1])/Task->h;
+                Task->dUdy[i][j] =
+                        0.5*(Task->U[i][j+1]-Task->U[i][j-1])/Task->h;
                 if(i==0 || i==Task->n-1)
                     Task->dUdxdy[i][j]=0.5*(Task->dUdx[i][j+1]
                                             -Task->dUdx[i][j-1])/Task->h;
@@ -79,8 +79,10 @@ void IDO_InitNormalD_2(Grid *Task, Grid *F)
 {
     int i,n=Task->n;
     double h = Task->h;
+    int l,p;
     for(i=1;i<n-1;i++)
     {
+        //IDO:
 //        d=(1./Task->h*(Task->U[i+1][j]
 //                       -2.*Task->U[i][j]
 //                       +Task->U[i-1][j])
@@ -90,37 +92,59 @@ void IDO_InitNormalD_2(Grid *Task, Grid *F)
 //                       -2.*Task->U[i][j]
 //                       +Task->U[i][j-1])
 //           -0.25*(Task->dUdy[i][j+1]-Task->dUdy[i][j-1]))/Task->h;
+
+//        c=(1.25/Task->h*(Task->U[i+1][j]-Task->U[i-1][j])
+//           -0.25*(Task->dUdx[i+1][j]
+//                  +8*Task->dUdx[i][j]
+//                  +Task->dUdx[i-1][j]))/Task->h/Task->h;
+
+//        C=(1.25/Task->h*(Task->U[i][j+1]-Task->U[i][j-1])
+//           -0.25*(Task->dUdy[i][j+1]
+//                  +8*Task->dUdy[i][j]
+//                  +Task->dUdy[i][j-1]))/Task->h/Task->h;
+
+        //CIP:
 //        B = 3.*(Task->U[i+1]-Task->U[i])/h/h - (2.*Task->dUdx[i]+Task->dUdx[i+1])/h;
 //        B = 3.*(Uarr[i-1]-Uarr[i])/hx/hx + (2.*dUarr[i]+dUarr[i-1])/hx;
-
+//b=f/2-D
         Task->dUdx[0][i] = (3.*(Task->U[1][i]-Task->U[0][i])/h/h - (Task->dUdx[1][i])/h - F->U[0][i]/2 +
                 (1./h*(Task->U[0][i+1] -2.*Task->U[0][i] +Task->U[0][i-1])-0.25*(Task->dUdy[0][i+1]-Task->dUdy[0][i-1]))/h)*0.5*h;
         Task->dUdy[i][0] = (3.*(Task->U[i][1]-Task->U[i][0])/h/h - (Task->dUdy[i][1])/h - F->U[i][0]/2 +
                 (1./h*(Task->U[i+1][0] -2.*Task->U[i][0] +Task->U[i-1][0])-0.25*(Task->dUdx[i+1][0]-Task->dUdx[i-1][0]))/h)*0.5*h;
-//        Task->dUdy[i][n-1] = (-3.*(Task->U[i][n-2]-Task->U[i][n-1])/h/h + (2.*Task->dUdy[i][n-2])/h - F->U[i][n-1]/2 +
-//                (1./h*(Task->U[i+1][n-1] -2.*Task->U[i][n-1] +Task->U[i-1][n-1])-0.25*(Task->dUdx[i+1][n-1]-Task->dUdx[i-1][n-1]))/h)*h;
-
-//        Task->dUdx[n-1][i] = (3.*(Task->U[n-1][i]-Task->U[n-1][i-1])/h/h - (2.*Task->dUdx[n-1][i-1])/h - F->U[n-1][i]/2 +
-//                (1./h*(Task->U[n-1][i+1] -2.*Task->U[n-1][i] +Task->U[n-1][i-1]) -0.25*(Task->dUdy[n-1][i+1]-Task->dUdy[n-1][i-1]))/h)*h;
-//        Task->dUdy[i][n-1] = (3.*(Task->U[i][n-1]-Task->U[i-1][n-1])/h/h - (2.*Task->dUdx[i-1][n-1])/h - F->U[i][n-1]/2 +
-//                (1./h*(Task->U[i+1][n-1] -2.*Task->U[i][n-1] +Task->U[i-1][n-1]) -0.25*(Task->dUdy[i+1][n-1]-Task->dUdy[i-1][n-1]))/h)*h;
 
         Task->dUdx[n-1][i] = (3.*(Task->U[n-1][i]-Task->U[n-2][i])/h/h - (2.*Task->dUdx[n-2][i])/h - F->U[n-1][i]/2 +
                 (1./h*(Task->U[n-1][i+1] -2.*Task->U[n-1][i] +Task->U[n-1][i-1])-0.25*(Task->dUdy[n-1][i+1]-Task->dUdy[n-1][i-1]))/h)*h;
         Task->dUdy[i][n-1] = (3.*(Task->U[i][n-1]-Task->U[i][n-2])/h/h - (2.*Task->dUdy[i][n-2])/h - F->U[i][n-1]/2 +
                 (1./h*(Task->U[i+1][n-1] -2.*Task->U[i][n-1] +Task->U[i-1][n-1])-0.25*(Task->dUdx[i+1][n-1]-Task->dUdx[i-1][n-1]))/h)*h;
 
+//        6*C+2*b-dfdy[i][j] = 0;
+//        l=i;p=n-1;
+//        Task->dUdxdy[l][p] = (6*(1.25/h*(Task->U[l][p+1]-Task->U[l][p-1])
+//          -0.25*(Task->dUdy[l][p+1]+8*Task->dUdy[l][p]+Task->dUdy[l][p-1]))/h/h
+//          +2*(3.*(Task->dUdy[l+1][p]-Task->dUdy[l][p])/h/h - (Task->dUdxdy[l+1][p])/h)-F->dUdy[l][p])*0.5*h;
+//        l=i;p=n-1;
+//        Task->dUdxdy[l][p] = (6*(1.25/h*(Task->U[l][p+1]-Task->U[l][p-1])
+//          -0.25*(Task->dUdy[l][p+1]+8*Task->dUdy[l][p]+Task->dUdy[l][p-1]))/h/h
+//          +2*(3.*(Task->dUdy[l+1][p]-Task->dUdy[l][p])/h/h - (Task->dUdxdy[l+1][p])/h)-F->dUdy[l][p])*0.5*h;
+//        l=0;p=i;
+//        Task->dUdxdy[l][p] = (6*(1.25/h*(Task->U[l][p+1]-Task->U[l][p-1])
+//          -0.25*(Task->dUdy[l][p+1]+8*Task->dUdy[l][p]+Task->dUdy[l][p-1]))/h/h
+//          +2*(3.*(Task->dUdy[l+1][p]-Task->dUdy[l][p])/h/h - (Task->dUdxdy[l+1][p])/h)-F->dUdy[l][p])*0.25*h;
+//        l=n-1;p=i;
+//        Task->dUdxdy[l][p] = (6*(1.25/h*(Task->U[l][p+1]-Task->U[l][p-1])
+//          -0.25*(Task->dUdy[l][p+1]+8*Task->dUdy[l][p]+Task->dUdy[l][p-1]))/h/h
+//          +2*(3.*(Task->dUdy[l+1][p]-Task->dUdy[l][p])/h/h - (Task->dUdxdy[l+1][p])/h)-F->dUdy[l][p])*0.25*h;
 
-//        Task->dUdx[0][i] = (Task->U[1][i]-Task->U[0][i])/h;
-//        Task->dUdx[n-1][i] = (Task->U[n-1][i]-Task->U[n-2][i])/h;
-
-//        Task->dUdy[i][0] = (Task->U[i][1]-Task->U[i][0])/h;
-//        Task->dUdy[i][n-1] = (Task->U[i][n-1]-Task->U[i][n-2])/h;
 
         Task->dUdxdy[i][0] = (Task->U[i+1][1]-Task->U[i-1][1]-Task->U[i+1][0]+Task->U[i-1][0])/h;
         Task->dUdxdy[i][n-1]=(Task->U[i+1][n-1]-Task->U[i-1][n-1]-Task->U[i+1][n-2]+Task->U[i-1][n-2])/h;
         Task->dUdxdy[0][i] = (Task->U[1][i+1]-Task->U[1][i-1]-Task->U[0][i+1]+Task->U[0][i-1])/h;
         Task->dUdxdy[n-1][i]=(Task->U[n-1][i+1]-Task->U[n-1][i-1]-Task->U[n-2][i+1]+Task->U[n-2][i-1])/h;
+
+//        Task->dUdxdy[i][0] = (Task->dUdy[i][1]-Task->dUdy[i][0]+Task->dUdx[i][1]-Task->dUdx[i][0])/h*0.5;
+//        Task->dUdxdy[i][n-1] = (Task->dUdy[i][n-1]-Task->dUdy[i][n-2]+Task->dUdx[i][n-1]-Task->dUdx[i][n-2])/h*0.5;
+//        Task->dUdxdy[0][i] = (Task->dUdx[1][i]-Task->dUdx[0][i]+Task->dUdy[1][i]-Task->dUdy[0][i])/h;
+//        Task->dUdxdy[n-1][i] = (Task->dUdx[n-1][i]-Task->dUdx[n-2][i]+Task->dUdy[n-1][i]-Task->dUdy[n-2][i])/h;
     }
 }
 
