@@ -175,17 +175,18 @@ void Grid_print_error(Grid *Task, double (*exact)(double, double))
 {
     // for all values in U array, print values of its coords and U
     int i,j;
-    double maxErr = 0.;
+    double errC = 0., errL1 = 0., errL2 = 0.,
+            h = Task->h;
     for(i = 0; i < Task->n; i++)
     {
         for(j = 0; j < Task->n; j++)
         {
-            maxErr = fmax(maxErr,fabs(Task->U[i][j]
-                                      -(*exact)(Task->x0+i*Task->h,
-                                                Task->y0+j*Task->h)));
+            errC = fmax(errC,fabs(Task->U[i][j]-(*exact)(Task->x0+i*h,Task->y0+j*h)));
+            errL1 += fabs(Task->U[i][j]-(*exact)(Task->x0+i*h,Task->y0+j*h))*h*h;
+            errL2 += pow(fabs(Task->U[i][j]-(*exact)(Task->x0+i*h,Task->y0+j*h)),2)*h*h;
         }
     }
-    printf("%10.10e\n",maxErr);
+    printf("%d x %d & %10.10e & %10.10e & %10.10e \\\\ \n",Task->n,Task->n,errC, errL1, sqrt(errL2));
 }
 
 void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double))

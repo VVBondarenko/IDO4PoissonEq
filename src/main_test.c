@@ -37,54 +37,93 @@ int main(int argc, char **argv)
 {
 
     int iters = atoi(argv[1]);
-
+    int sizeN = 4;
+    int sizes[] = {8, 16, 32, 64};
+    int i;
     printf("test 1: laplace, poly pow-2\n");
-    Grid test_cross, test_ido, force1;
+    printf("cross\n");
+    for(i = 0; i < sizeN; i++)
+    {
+        Grid test_cross;
+        Grid_Init (&test_cross, -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
 
-    Grid_InitByFunction(&force1,&zero,-M_PI, M_PI, -M_PI, M_PI, 64);
-    Grid_Init (&test_cross, -M_PI, M_PI, -M_PI, M_PI, 64, 0.001);
-    Grid_Init (&test_ido,   -M_PI, M_PI, -M_PI, M_PI, 64, 0.001);
+        Grid_InitDirihlet    (&test_cross, &boundary);
 
-    Grid_InitDirihlet    (&test_cross, &boundary);
-    Grid_InitDirihlet_w_d(&test_ido,   &boundary);
+        Cross_IterationSet(&test_cross,1.,iters);
+        Grid_print_error(&test_cross, &boundary);
+    }
+    printf("IDO:\n");
+    for(i = 0; i < sizeN; i++)
+    {
+        Grid test_ido, zero_force;
 
-    Cross_IterationSet(&test_cross,1.,iters);
-    Grid_print_error(&test_cross, &boundary);
+        Grid_InitByFunction(&zero_force,&zero,-M_PI, M_PI, -M_PI, M_PI, sizes[i]);
+        Grid_Init               (&test_ido,   -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
 
-    IDO_Ori_IterationSet_w_f_2(&test_ido,1.,&force1,2*iters);
-    Grid_print_error(&test_ido, &boundary);
+        Grid_InitDirihlet_w_d(&test_ido,   &boundary);
+
+        IDO_Ori_IterationSet_w_f_2(&test_ido,1.,&zero_force,2*iters);
+        Grid_print_error(&test_ido, &boundary);
+    }
 
     printf("test 2: jap. sin*sin\n");
-    Grid test_cross2, test_ido2, force2;
+    printf("cross:\n");
+    for(i = 0; i < sizeN; i++)
+    {
+        Grid test_cross2, force2;
 
-    Grid_InitByFunction(&force2,&f2,-M_PI, M_PI, -M_PI, M_PI, 64);
-    Grid_Init (&test_cross2, -M_PI, M_PI, -M_PI, M_PI, 64, 0.001);
-    Grid_Init (&test_ido2,   -M_PI, M_PI, -M_PI, M_PI, 64, 0.001);
+        Grid_InitByFunction(&force2,&f2,-M_PI, M_PI, -M_PI, M_PI, sizes[i]);
+        Grid_Init (&test_cross2, -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
 
-    Grid_InitDirihlet    (&test_cross2, &zero);
-    Grid_InitDirihlet_w_d(&test_ido2,   &zero);
+        Grid_InitDirihlet    (&test_cross2, &zero);
 
-    Cross_IterationSet(&test_cross2,1.,iters);
-    Grid_print_error(&test_cross2, &e2);
+        Cross_IterationSet_w_f(&test_cross2,1.,&force2,iters);
+        Grid_print_error(&test_cross2, &e2);
+    }
 
-    IDO_Ori_IterationSet_w_f_2(&test_ido2,1.,&force2,2*iters);
-    Grid_print_error(&test_ido2, &e2);
+    printf("IDO:\n");
+    for(i = 0; i < sizeN; i++)
+    {
+
+        Grid test_ido2, force2;
+
+        Grid_InitByFunction(&force2,&f2,-M_PI, M_PI, -M_PI, M_PI, sizes[i]);
+        Grid_Init (&test_ido2,   -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
+
+        Grid_InitDirihlet_w_d(&test_ido2,   &zero);
+
+        IDO_Ori_IterationSet_w_f_2(&test_ido2,1.,&force2,2*iters);
+        Grid_print_error(&test_ido2, &e2);
+    }
 
     printf("test 3: exp-hat\n");
-    Grid test_cross3, test_ido3, force3;
+    printf("cross:\n");
+    for(i = 0; i < sizeN; i++)
+    {
+        Grid test_cross3, force3;
 
-    Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, 64);
-    Grid_Init (&test_cross3, -1, 1, -1, 1, 64, 0.001);
-    Grid_Init (&test_ido3,   -1, 1, -1, 1, 64, 0.001);
+        Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, sizes[i]);
+        Grid_Init (&test_cross3, -1, 1, -1, 1, sizes[i], 0.001);
 
-    Grid_InitDirihlet    (&test_cross3, &zero);
-    Grid_InitDirihlet_w_d(&test_ido3,   &zero);
+        Grid_InitDirihlet    (&test_cross3, &zero);
 
-    Cross_IterationSet(&test_cross3,1.,iters);
-    Grid_print_error(&test_cross3, &e3);
+        Cross_IterationSet_w_f(&test_cross3,1.,&force3,iters);
+        Grid_print_error(&test_cross3, &e3);
+    }
+    printf("IDO:\n");
+    for(i = 0; i < sizeN; i++)
+    {
+        Grid test_ido3, force3;
 
-    IDO_Ori_IterationSet_w_f_2(&test_ido3,1.,&force3,2*iters);
-    Grid_print_error(&test_ido3, &e3);
+        Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, sizes[i]);
+        Grid_Init (&test_ido3,   -1, 1, -1, 1, sizes[i], 0.001);
+
+        Grid_InitDirihlet_w_d(&test_ido3,   &zero);
+
+        IDO_Ori_IterationSet_w_f_2(&test_ido3,1.,&force3,2*iters);
+        Grid_print_error(&test_ido3, &e3);
+    }
+
 
 //    Grid_Plot_error(&test_ido,&boundary);
 //    Grid_Plot(&test_ido2);
