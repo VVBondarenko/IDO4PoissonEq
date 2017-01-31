@@ -13,12 +13,12 @@ double zero(double x, double y)
 
 double f2(double x, double y)
 {
-    return -2.*sin(x)*sin(y);
+    return -2.*sin(x*M_PI)*sin(y*M_PI)*M_PI*M_PI;
 }
 
 double e2(double x, double y)
 {
-    return sin(x)*sin(y);
+    return sin(x*M_PI)*sin(y*M_PI);
 }
 
 double f3(double x, double y)
@@ -143,15 +143,15 @@ int main()
     err_tab = fopen("err_of_omega.dat","w");
 
     int i,N = 65;
-    double omega = 1.;
+    double omega = 0.5;
     for(omega; omega<2.;omega+=0.015)
     {
         Grid test_ido3, force3;
 
-        Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, N);
+        Grid_InitByFunction(&force3,&f2,-1, 1, -1, 1, N);
         Grid_Init (&test_ido3,          -1, 1, -1, 1, N, 0.001);
 
-        Grid_InitDirihlet_w_d(&test_ido3,   &zero);
+        Grid_InitDirihlet_w_d(&test_ido3,   &e2);
 
         Cross_IterationSet_w_f(&test_ido3,1.,&force3, 7000);
 //        Grid_print_error(&test_ido3,&e3);
@@ -160,7 +160,7 @@ int main()
         for(i=0;i<20;i++)
         {
             IDO_Ori_IterationSet_w_f_Seidel(&test_ido3,omega,&force3,1);
-            fprintf(err_tab,"%d %f %f\n",i,omega,log10(Grid_print_error(&test_ido3,&e3)/4.));
+            fprintf(err_tab,"%d %f %f\n",i,omega,log10(Grid_print_error(&test_ido3,&e2)/4.));
 //            Grid_print_error(&test_ido3,&e3);
         }
         fprintf(err_tab,"\n");
