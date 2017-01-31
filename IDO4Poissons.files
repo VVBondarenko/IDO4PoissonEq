@@ -11,3 +11,4 @@ Makefile
 src/gs-ido.c
 inc/gs-ido.h
 src/main_test.c
+src/main_ido_cfd.c

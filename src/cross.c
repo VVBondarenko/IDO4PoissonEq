@@ -46,7 +46,8 @@ void Cross_Iteration_w_force(Grid *Task, double omega, Grid *force)
     for(i=0; i<Task->n; i++)
         nU[i] = malloc(Task->n * sizeof(double));
     //for all values apply classical schematic
-#pragma omp parallel for shared(nU,omega,Task,force) private(i,j)
+//#pragma omp parallel for shared(nU,omega,Task,force) private(i,j)
+#pragma omp simd
     for(i=1; i<Task->n-1; i++)
     {
         for(j=1; j<Task->n-1; j++)

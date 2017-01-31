@@ -36,8 +36,9 @@ gs-ido:
 CFD:
 	$(CC) -c src/grid.c $(CFLAGS); \
 	$(CC) -c src/cross.c $(CFLAGS); \
-	$(CC) -c src/main_cross_CFD.c $(CFLAGS); \
-	$(CC) main_cross_CFD.o cross.o grid.o $(CFLAGS) -o CFD_cross_solver
+	$(CC) -c src/ido_original.c $(CFLAGS); \
+	$(CC) -c src/main_ido_cfd.c $(CFLAGS); \
+	$(CC) main_ido_cfd.o cross.o grid.o ido_original.o $(CFLAGS) -o CFD_cross_solver
 
 clean:
 	rm *solver *.o
