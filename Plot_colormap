@@ -1,0 +1,8 @@
+#!/usr/bin/gnuplot -persist
+
+#set terminal x11
+#set datafile missing "-nan"
+set view map
+load 'parula.pal'
+splot "err_of_omega.dat" using 1:2:3 with image
+pause -1

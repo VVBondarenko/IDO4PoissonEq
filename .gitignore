@@ -5,3 +5,6 @@
 
 #plot data files
 *.dat
+
+#solver binaries
+*solver
