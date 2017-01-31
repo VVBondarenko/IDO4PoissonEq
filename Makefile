@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc-5
 CFLAGS=-I./inc/ -g -lm -fopenmp -fopenmp-simd -O3 -ffast-math
 #-lgsl -lgslcblas
 
