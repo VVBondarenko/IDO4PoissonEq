@@ -33,7 +33,7 @@ double e3(double x, double y)
     return exp((x*x-1)*(y*y-1))-1.;
 }
 
-int main(int argc, char **argv)
+int test(int argc, char **argv)
 {
 
     int iters = atoi(argv[1]);
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
         Grid_InitDirihlet_w_d(&test_ido,   &boundary);
 
-        IDO_Ori_IterationSet_w_f_2(&test_ido,1.,&zero_force,2*iters);
+        IDO_Ori_IterationSet_w_f_Seidel(&test_ido,1.,&zero_force,iters);
         Grid_print_error(&test_ido, &boundary);
     }
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         Grid test_cross2, force2;
 
         Grid_InitByFunction(&force2,&f2,-M_PI, M_PI, -M_PI, M_PI, sizes[i]);
-        Grid_Init (&test_cross2, -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
+        Grid_Init (&test_cross2,        -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
 
         Grid_InitDirihlet    (&test_cross2, &zero);
 
@@ -88,11 +88,11 @@ int main(int argc, char **argv)
         Grid test_ido2, force2;
 
         Grid_InitByFunction(&force2,&f2,-M_PI, M_PI, -M_PI, M_PI, sizes[i]);
-        Grid_Init (&test_ido2,   -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
+        Grid_Init (&test_ido2,          -M_PI, M_PI, -M_PI, M_PI, sizes[i], 0.001);
 
         Grid_InitDirihlet_w_d(&test_ido2,   &zero);
 
-        IDO_Ori_IterationSet_w_f_2(&test_ido2,1.,&force2,2*iters);
+        IDO_Ori_IterationSet_w_f_Seidel(&test_ido2,1.,&force2,iters);
         Grid_print_error(&test_ido2, &e2);
     }
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         Grid test_cross3, force3;
 
         Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, sizes[i]);
-        Grid_Init (&test_cross3, -1, 1, -1, 1, sizes[i], 0.001);
+        Grid_Init (&test_cross3,        -1, 1, -1, 1, sizes[i], 0.001);
 
         Grid_InitDirihlet    (&test_cross3, &zero);
 
@@ -116,12 +116,13 @@ int main(int argc, char **argv)
         Grid test_ido3, force3;
 
         Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, sizes[i]);
-        Grid_Init (&test_ido3,   -1, 1, -1, 1, sizes[i], 0.001);
+        Grid_Init (&test_ido3,          -1, 1, -1, 1, sizes[i], 0.001);
 
         Grid_InitDirihlet_w_d(&test_ido3,   &zero);
 
-        IDO_Ori_IterationSet_w_f_2(&test_ido3,1.,&force3,2*iters);
+        IDO_Ori_IterationSet_w_f_Seidel(&test_ido3,1.,&force3,iters);
         Grid_print_error(&test_ido3, &e3);
+        Grid_Plot(&test_ido3);
     }
 
 
@@ -131,6 +132,39 @@ int main(int argc, char **argv)
 //    for(i=0;i<iters;i++)
 //        GSIDO_early_Iteration_w_func(&test_ido,1.,zero);
 //    Grid_print_error(&test_ido, &boundary);
+
+    return 0;
+}
+
+
+int main()
+{
+    FILE *err_tab;
+    err_tab = fopen("err_of_omega.dat","w");
+
+    int i,N = 65;
+    double omega = 1.;
+    for(omega; omega<2.;omega+=0.015)
+    {
+        Grid test_ido3, force3;
+
+        Grid_InitByFunction(&force3,&f3,-1, 1, -1, 1, N);
+        Grid_Init (&test_ido3,          -1, 1, -1, 1, N, 0.001);
+
+        Grid_InitDirihlet_w_d(&test_ido3,   &zero);
+
+        Cross_IterationSet_w_f(&test_ido3,1.,&force3, 7000);
+//        Grid_print_error(&test_ido3,&e3);
+        IDO_InitNormalD_2(&test_ido3,&force3);
+
+        for(i=0;i<20;i++)
+        {
+            IDO_Ori_IterationSet_w_f_Seidel(&test_ido3,omega,&force3,1);
+            fprintf(err_tab,"%d %f %f\n",i,omega,log10(Grid_print_error(&test_ido3,&e3)/4.));
+//            Grid_print_error(&test_ido3,&e3);
+        }
+        fprintf(err_tab,"\n");
+    }
 
     return 0;
 }

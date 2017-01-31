@@ -34,6 +34,6 @@ double Grid_Interpolate (Grid *Task, double x, double y); //TBD
 
 void Grid_Plot          (Grid *Task);
 void Grid_Plot_error    (Grid *Task, double (*exact)(double,double));
-void Grid_print_error   (Grid *Task, double (*exact)(double,double));
+double Grid_print_error(Grid *Task, double (*exact)(double,double));
 
 #endif // GRID_H

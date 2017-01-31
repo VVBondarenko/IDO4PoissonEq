@@ -83,10 +83,22 @@ void Cross_IterationSet    (Grid *Task, double omega, int N)
 
 void Cross_IterationSet_w_f(Grid *Task, double omega, Grid *force, int N)
 {
-    int i;
+    int i,j, n=Task->n;
     for(i=0;i<N;i++)
     {
         Cross_Iteration_w_force(Task,omega,force);
+    }
+
+    double h = Task->h;
+    for(i=1;i<n-1;i++)
+    {
+        for(j=1;j<n-1;j++)
+        {
+            Task->dUdx[i][j] = (Task->U[i+1][j]-Task->U[i-1][j])*0.5/h;
+            Task->dUdy[i][j] = (Task->U[i][j+1]-Task->U[i][j-1])*0.5/h;
+            Task->dUdxdy[i][j] = 0.25/h/h*(Task->U[i+1][j+1]-Task->U[i-1][j+1]
+                    -Task->U[i+1][j-1]+Task->U[i-1][j-1]);
+        }
     }
 }
 

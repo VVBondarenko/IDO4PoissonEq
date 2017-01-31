@@ -171,7 +171,7 @@ void Grid_Plot_error(Grid *Task, double (*exact)(double, double))
     fclose(output);
 }
 
-void Grid_print_error(Grid *Task, double (*exact)(double, double))
+double Grid_print_error(Grid *Task, double (*exact)(double, double))
 {
     // for all values in U array, print values of its coords and U
     int i,j;
@@ -186,7 +186,8 @@ void Grid_print_error(Grid *Task, double (*exact)(double, double))
             errL2 += pow(fabs(Task->U[i][j]-(*exact)(Task->x0+i*h,Task->y0+j*h)),2)*h*h;
         }
     }
-    printf("%d x %d & %10.10e & %10.10e & %10.10e \\\\ \n",Task->n,Task->n,errC, errL1, sqrt(errL2));
+//    printf("%d x %d & %10.10e & %10.10e & %10.10e \\\\ \n",Task->n,Task->n,errC, errL1, sqrt(errL2));
+    return errL2;
 }
 
 void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double))
