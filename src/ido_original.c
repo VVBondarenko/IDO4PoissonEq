@@ -773,34 +773,34 @@ void IDO_Ori_IterationSet_w_f_Seidel(Grid *Task, double omega, Grid *force, int 
                         +Task->U[i][j+1]+Task->U[i][j-1])
                         -0.5/h*(Task->dUdx[i+1][j]-Task->dUdx[i-1][j]
                         +Task->dUdy[i][j+1]-Task->dUdy[i][j-1])-force->U[i][j])/8.*h*h;
-#pragma omp simd
-        for(i=1; i<Task->n-1; i++)
-            for(j=1; j<Task->n-1; j++)
-                Task->dUdx[i][j] = (1-omega)*Task->dUdx[i][j]
-                        +omega*(7.5*(Task->U[i+1][j]-Task->U[i-1][j])/h/h/h
-                        -1.5*(Task->dUdx[i+1][j]+Task->dUdx[i-1][j])/h/h
-                        +2.*(Task->dUdx[i][j+1]+Task->dUdx[i][j-1])/h/h
-                        -0.5*(Task->dUdxdy[i][j+1]-Task->dUdxdy[i][j-1])/h-force->dUdx[i][j])
-                        /(12/h/h+4/h/h);
-#pragma omp simd
-        for(i=1; i<Task->n-1; i++)
-            for(j=1; j<Task->n-1; j++)
-                Task->dUdy[i][j] = (1-omega)*Task->dUdy[i][j]
-                        +omega*(7.5*(Task->U[i][j+1]-Task->U[i][j-1])/h/h/h
-                        -1.5*(Task->dUdy[i][j+1]+Task->dUdy[i][j-1])/h/h
-                        +2.*(Task->dUdy[i+1][j]+Task->dUdy[i-1][j])/h/h
-                        -0.5*(Task->dUdxdy[i+1][j]-Task->dUdxdy[i-1][j])/h-force->dUdy[i][j])
-                        /(12/h/h+4/h/h);
-#pragma omp simd
-        for(i=1; i<Task->n-1; i++)
-            for(j=1; j<Task->n-1; j++)
-                Task->dUdxdy[i][j] = (1-omega)*Task->dUdxdy[i][j]
-                        +omega*(7.5*(Task->dUdx[i][j+1]-Task->dUdx[i][j-1]
-                        +Task->dUdy[i+1][j]-Task->dUdy[i-1][j])/h/h/h
-                        -1.5*(Task->dUdxdy[i][j+1]+Task->dUdxdy[i][j-1]
-                        +Task->dUdxdy[i+1][j]+Task->dUdxdy[i-1][j])/h/h
-                        -force->dUdxdy[i][j]
-                        )/24*h*h;
+//#pragma omp simd
+//        for(i=1; i<Task->n-1; i++)
+//            for(j=1; j<Task->n-1; j++)
+//                Task->dUdx[i][j] = (1-omega)*Task->dUdx[i][j]
+//                        +omega*(7.5*(Task->U[i+1][j]-Task->U[i-1][j])/h/h/h
+//                        -1.5*(Task->dUdx[i+1][j]+Task->dUdx[i-1][j])/h/h
+//                        +2.*(Task->dUdx[i][j+1]+Task->dUdx[i][j-1])/h/h
+//                        -0.5*(Task->dUdxdy[i][j+1]-Task->dUdxdy[i][j-1])/h-force->dUdx[i][j])
+//                        /(12/h/h+4/h/h);
+//#pragma omp simd
+//        for(i=1; i<Task->n-1; i++)
+//            for(j=1; j<Task->n-1; j++)
+//                Task->dUdy[i][j] = (1-omega)*Task->dUdy[i][j]
+//                        +omega*(7.5*(Task->U[i][j+1]-Task->U[i][j-1])/h/h/h
+//                        -1.5*(Task->dUdy[i][j+1]+Task->dUdy[i][j-1])/h/h
+//                        +2.*(Task->dUdy[i+1][j]+Task->dUdy[i-1][j])/h/h
+//                        -0.5*(Task->dUdxdy[i+1][j]-Task->dUdxdy[i-1][j])/h-force->dUdy[i][j])
+//                        /(12/h/h+4/h/h);
+//#pragma omp simd
+//        for(i=1; i<Task->n-1; i++)
+//            for(j=1; j<Task->n-1; j++)
+//                Task->dUdxdy[i][j] = (1-omega)*Task->dUdxdy[i][j]
+//                        +omega*(7.5*(Task->dUdx[i][j+1]-Task->dUdx[i][j-1]
+//                        +Task->dUdy[i+1][j]-Task->dUdy[i-1][j])/h/h/h
+//                        -1.5*(Task->dUdxdy[i][j+1]+Task->dUdxdy[i][j-1]
+//                        +Task->dUdxdy[i+1][j]+Task->dUdxdy[i-1][j])/h/h
+//                        -force->dUdxdy[i][j]
+//                        )/24*h*h;
 
         IDO_InitNormalD_2(Task,force);
     }

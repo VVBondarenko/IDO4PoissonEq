@@ -142,20 +142,26 @@ int main()
     FILE *err_tab;
     err_tab = fopen("err_of_omega.dat","w");
 
-    int i,N = 65;
+    int i,N = 129;
     double omega = 0.5;
+
+    Grid initial_cross, force3;
+
+    Grid_InitByFunction(&force3,&f2,-1, 1, -1, 1, N);
+    Grid_Init (&initial_cross,      -1, 1, -1, 1, N, 0.001);
+
+    Grid_InitDirihlet_w_d(&initial_cross,   &e2);
+
+    Cross_IterationSet_w_f(&initial_cross,1.,&force3, 10000);
+//        Grid_print_error(&test_ido3,&e3);
+    IDO_InitNormalD_2(&initial_cross,&force3);
+
+
     for(omega; omega<2.;omega+=0.015)
     {
-        Grid test_ido3, force3;
+        Grid test_ido3;
 
-        Grid_InitByFunction(&force3,&f2,-1, 1, -1, 1, N);
-        Grid_Init (&test_ido3,          -1, 1, -1, 1, N, 0.001);
-
-        Grid_InitDirihlet_w_d(&test_ido3,   &e2);
-
-        Cross_IterationSet_w_f(&test_ido3,1.,&force3, 7000);
-//        Grid_print_error(&test_ido3,&e3);
-        IDO_InitNormalD_2(&test_ido3,&force3);
+        Grid_Copy(&test_ido3,&initial_cross);
 
         for(i=0;i<20;i++)
         {

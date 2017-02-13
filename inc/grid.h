@@ -36,4 +36,6 @@ void Grid_Plot          (Grid *Task);
 void Grid_Plot_error    (Grid *Task, double (*exact)(double,double));
 double Grid_print_error(Grid *Task, double (*exact)(double,double));
 
+void Grid_Copy(Grid *This, Grid *Source);
+
 #endif // GRID_H

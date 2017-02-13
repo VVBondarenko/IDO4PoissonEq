@@ -249,3 +249,39 @@ void Grid_InitDirihlet_w_derivatives(Grid *Task, double (*f)(double, double))
 
     }
 }
+
+void Grid_Copy(Grid *This, Grid *Source)
+{
+    int i,j;
+
+//    for(i=0;i<This->n;i++)
+//    {
+//        free(This->U[i]);
+//        free(This->dUdx[i]);
+//        free(This->dUdy[i]);
+//        free(This->dUdxdy[i]);
+//    }
+
+//    free(This->U);
+//    free(This->dUdx);
+//    free(This->dUdy);
+//    free(This->dUdxdy);
+
+    This->U = 0;
+    This->dUdx = 0;
+    This->dUdy = 0;
+    This->dUdxdy=0;
+
+    Grid_Init(This,Source->x0,Source->x1,Source->y0,Source->y1,Source->n,0.);
+
+    for(i=0;i<Source->n;i++)
+    {
+        for(j=0;j<Source->n;j++)
+        {
+            This->U[i][j] = Source->U[i][j];
+            This->dUdx[i][j] = Source->dUdx[i][j];
+            This->dUdy[i][j] = Source->dUdy[i][j];
+            This->dUdxdy[i][j]=Source->dUdxdy[i][j];
+        }
+    }
+}
