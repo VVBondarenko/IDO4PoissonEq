@@ -201,33 +201,30 @@ int main()
 
     printf("cross iterations section:\n");
 
-
     Grid_Init(&CG1, -1,1, -1,1, 9, 0.);
-    Cross_IterationSet_w_f(&CG1,1.,&F1,100);
-    printf("9x9 on 100 Iters:\t%f\n",log10(Grid_print_error(&CG1,&e2)/4.));
+    Cross_IterationSet_w_f(&CG1,1.,&F1,500);
+    printf("9x9 on 500 Iters:\t%f\n",log10(Grid_print_error(&CG1,&e2)/4.));
 
     printf("\n");
 
-    //ToDo: update boundary values on intensification
     Grid_Intensify(&CG2, &CG1);
     printf("17x17 on interp: \t%f\n",log10(Grid_print_error(&CG2,&e2)/4.));
-    Cross_IterationSet_w_f(&CG2,1.,&F2,200);
-    printf("17x17 on 200 Iters\t%f\n",log10(Grid_print_error(&CG2,&e2)/4.));
+    Cross_IterationSet_w_f(&CG2,1.,&F2,500);
+    printf("17x17 on 500 Iters\t%f\n",log10(Grid_print_error(&CG2,&e2)/4.));
 
     printf("\n");
 
-    //ToDo: -----//-----
     Grid_Intensify(&CG3, &CG2);
     printf("33x33 on interp: \t%f\n",log10(Grid_print_error(&CG3,&e2)/4.));
-    Cross_IterationSet_w_f(&CG3,1.,&F3,300);
-    printf("33x33 on 300 Iters\t%f\n",log10(Grid_print_error(&CG3,&e2)/4.));
+    Cross_IterationSet_w_f(&CG3,1.,&F3,500);
+    printf("33x33 on 500 Iters\t%f\n",log10(Grid_print_error(&CG3,&e2)/4.));
 
     printf("\n");
 
     Grid_Intensify(&CG4, &CG3);
     printf("65x65 on interp: \t%f\n",log10(Grid_print_error(&CG4,&e2)/4.));
-    Cross_IterationSet_w_f(&CG4,1.,&F4,300);
-    printf("65x65 on 300 Iters\t%f\n",log10(Grid_print_error(&CG4,&e2)/4.));
+    Cross_IterationSet_w_f(&CG4,1.,&F4,500);
+    printf("65x65 on 500 Iters\t%f\n",log10(Grid_print_error(&CG4,&e2)/4.));
 
     printf("\n");
 
@@ -238,23 +235,24 @@ int main()
     Grid_Copy(&IG3, &CG3);
     Grid_Copy(&IG4, &CG4);
 
-//    printf("copied\n");
-
     // IDO iterations
-    IDO_Ori_IterationSet_w_f_Seidel(&IG1,1.8,&F1,10);
+    IDO_InitNormalD_2(&IG1,&F1);
+    IDO_Ori_IterationSet_w_f_Seidel(&IG1,1.8,&F1,1);
     printf("9x9 on 1   Iters:\t%f\n",log10(Grid_print_error(&IG1,&e2)/4.));
 
-    IDO_Ori_IterationSet_w_f_Seidel(&IG2,1.8,&F2,20);
+    IDO_InitNormalD_2(&IG2,&F2);
+    IDO_Ori_IterationSet_w_f_Seidel(&IG2,1.8,&F2,2);
     printf("17x17 on 1 Iters:\t%f\n",log10(Grid_print_error(&IG2,&e2)/4.));
 
-    IDO_Ori_IterationSet_w_f_Seidel(&IG3,1.8,&F3,30);
+    IDO_InitNormalD_2(&IG3,&F3);
+    IDO_Ori_IterationSet_w_f_Seidel(&IG3,1.8,&F3,5);
     printf("33x33 on 1 Iters:\t%f\n",log10(Grid_print_error(&IG3,&e2)/4.));
 
-    IDO_Ori_IterationSet_w_f_Seidel(&IG4,1.8,&F4,40);
+    IDO_InitNormalD_2(&IG4,&F4);
+    IDO_Ori_IterationSet_w_f_Seidel(&IG4,1.8,&F4,21);
     printf("65x65 on 1 Iters:\t%f\n",log10(Grid_print_error(&IG4,&e2)/4.));
 
-    //modify iterations quantities...
-
-
+    //add auto iteration identifier... optimize the process.
+    //improve accuracy of intepolation in grid intensification
     return 0;
 }
