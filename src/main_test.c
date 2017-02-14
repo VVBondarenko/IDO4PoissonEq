@@ -252,6 +252,22 @@ int main()
     IDO_Ori_IterationSet_w_f_Seidel(&IG4,1.8,&F4,21);
     printf("65x65 on 1 Iters:\t%f\n",log10(Grid_print_error(&IG4,&e2)/4.));
 
+    FILE *accuracy_tab;
+    accuracy_tab = fopen("accuracy_tab.dat","w");
+
+    fprintf(accuracy_tab, "%f %f %f\n", log10(CG1.h),
+                                        log10(Grid_print_error(&CG1,&e2)/4.),
+                                        log10(Grid_print_error(&IG1,&e2)/4.));
+    fprintf(accuracy_tab, "%f %f %f\n", log10(CG2.h),
+                                        log10(Grid_print_error(&CG2,&e2)/4.),
+                                        log10(Grid_print_error(&IG2,&e2)/4.));
+    fprintf(accuracy_tab, "%f %f %f\n", log10(CG3.h),
+                                        log10(Grid_print_error(&CG3,&e2)/4.),
+                                        log10(Grid_print_error(&IG3,&e2)/4.));
+    fprintf(accuracy_tab, "%f %f %f\n", log10(CG4.h),
+                                        log10(Grid_print_error(&CG4,&e2)/4.),
+                                        log10(Grid_print_error(&IG4,&e2)/4.));
+    fclose(accuracy_tab);
     //add auto iteration identifier... optimize the process.
     //improve accuracy of intepolation in grid intensification
     return 0;
