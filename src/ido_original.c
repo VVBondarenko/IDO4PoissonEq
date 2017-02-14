@@ -804,6 +804,18 @@ void IDO_Ori_IterationSet_w_f_Seidel(Grid *Task, double omega, Grid *force, int 
 
         IDO_InitNormalD_2(Task,force);
     }
+//    double h = Task->h;
+    for(i=1;i<Task->n-1;i++)
+    {
+        for(j=1;j<Task->n-1;j++)
+        {
+            Task->dUdx[i][j] = (Task->U[i+1][j]-Task->U[i-1][j])*0.5/h;
+            Task->dUdy[i][j] = (Task->U[i][j+1]-Task->U[i][j-1])*0.5/h;
+            Task->dUdxdy[i][j] = 0.25/h/h*(Task->U[i+1][j+1]-Task->U[i-1][j+1]
+                    -Task->U[i+1][j-1]+Task->U[i-1][j-1]);
+        }
+    }
+
 }
 
 void IDO_Ori_IterationSet_w_f_Seidel_ILU(Grid *Task, double omega, Grid *force, int N)

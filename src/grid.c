@@ -254,19 +254,20 @@ void Grid_Copy(Grid *This, Grid *Source)
 {
     int i,j;
 
-//    for(i=0;i<This->n;i++)
-//    {
-//        free(This->U[i]);
-//        free(This->dUdx[i]);
-//        free(This->dUdy[i]);
-//        free(This->dUdxdy[i]);
-//    }
-
-//    free(This->U);
-//    free(This->dUdx);
-//    free(This->dUdy);
-//    free(This->dUdxdy);
-
+    //ToDo: add check for allocated memory
+    /*
+    for(i=0; i<This->n; i++)
+    {
+        free((void *)This->U[i]);
+        free((void *)This->dUdx[i]);
+        free((void *)This->dUdy[i]);
+        free((void *)This->dUdxdy[i]);
+    }
+    free((void *)This->U);
+    free((void *)This->dUdx);
+    free((void *)This->dUdy);
+    free((void *)This->dUdxdy);
+*/
     This->U = 0;
     This->dUdx = 0;
     This->dUdy = 0;
@@ -284,4 +285,65 @@ void Grid_Copy(Grid *This, Grid *Source)
             This->dUdxdy[i][j]=Source->dUdxdy[i][j];
         }
     }
+}
+
+void Grid_Intensify(Grid *This, Grid *Source)
+{
+    This->U = 0;
+    This->dUdx = 0;
+    This->dUdy = 0;
+    This->dUdxdy=0;
+
+    Grid_Init(This,Source->x0,Source->x1,Source->y0,Source->y1,Source->n*2-1,0.);
+
+    int i, j;
+    double a, b, du, dup;
+
+    for(i=0;i<Source->n;i++)
+    {
+        for(j=0;j<Source->n;j++)
+        {
+            This->U[2*i][2*j] = Source->U[i][j];
+        }
+    }
+
+    for(i=0;i<Source->n-1;i++)
+    {
+        for(j=0;j<Source->n;j++)
+        {
+            a = (-2./Source->h*(Source->U[i+1][j]-Source->U[i][j])+(Source->dUdx[i+1][j]+Source->dUdx[i][j]))/Source->h/Source->h;
+            b = (3./Source->h*(Source->U[i+1][j]-Source->U[i][j])-(Source->dUdx[i+1][j]+2.*Source->dUdx[i][j]))/Source->h;
+            This->U[2*i+1][2*j] = Source->U[i][j]+Source->h/2.*(Source->dUdx[i][j]+Source->h/2.*(b+Source->h/2.*a));
+        }
+    }
+
+    for(i=0;i<Source->n;i++)
+    {
+        for(j=0;j<Source->n-1;j++)
+        {
+            a = (-2./Source->h*(Source->U[i][j+1]-Source->U[i][j])+(Source->dUdy[i][j+1]+Source->dUdy[i][j]))/Source->h/Source->h;
+            b = (3./Source->h*(Source->U[i][j+1]-Source->U[i][j])-(Source->dUdy[i][j+1]+2.*Source->dUdy[i][j]))/Source->h;
+            This->U[2*i][2*j+1] = Source->U[i][j]+Source->h/2.*(Source->dUdy[i][j]+Source->h/2.*(b+Source->h/2.*a));
+        }
+    }
+
+    for(i=0;i<Source->n-1;i++)
+    {
+        for(j=0;j<Source->n-1;j++)
+        {
+            du = (Source->dUdx[i][j]+Source->dUdy[i][j])/sqrt(2);
+            dup= (Source->dUdx[i+1][j+1]+Source->dUdy[i+1][j+1])/sqrt(2);
+            a = (-2./Source->h*(Source->U[i+1][j+1]-Source->U[i][j])+(dup+du))/Source->h/Source->h;
+            b = (3./Source->h*(Source->U[i+1][j+1]-Source->U[i][j])-(dup+2.*du))/Source->h;
+            This->U[2*i+1][2*j+1] = Source->U[i][j]+Source->h/2.*(du+Source->h/2.*(b+Source->h/2.*a));
+        }
+    }
+
+
+}
+
+void Grid_Intensify_v2(Grid *This, Grid *Source, double (*bf)(double, double))
+{
+    Grid_Intensify(This, Source);
+    Grid_InitDirihlet(This,bf);
 }
